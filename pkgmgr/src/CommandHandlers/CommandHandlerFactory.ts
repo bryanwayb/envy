@@ -1,5 +1,5 @@
 import Container, { Service } from 'typedi';
-import { DI_ICommandHandlerFactory, DI_ICommandHandler_InstallCommand, DI_ICommandHandler_HelpCommand, DI_ICommandHandler_ListCommand } from '../../consts';
+import { DI_ICommandHandlerFactory, DI_ICommandHandler_InstallCommand, DI_ICommandHandler_HelpCommand, DI_ICommandHandler_ListCommand, DI_ICommandHandler_SearchCommand } from '../../consts';
 import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { ICommandHandlerFactory } from '../Interfaces/ICommandHandlerFactory';
 import CommandLineService from '../Services/CommandLineService';
@@ -10,7 +10,8 @@ export class CommandHandlerFactory implements ICommandHandlerFactory {
 
     private _commandDIMap: { [key: string]: string } = {
         'install': DI_ICommandHandler_InstallCommand,
-        'list': DI_ICommandHandler_ListCommand
+        'list': DI_ICommandHandler_ListCommand,
+        'search': DI_ICommandHandler_SearchCommand
     };
 
     constructor() {

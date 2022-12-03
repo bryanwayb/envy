@@ -21,7 +21,11 @@ export default class PackageServiceFactory implements IPackageServiceFactory {
         const ret = new Array<IPackageService>();
 
         for (const i in this._packageManagerMapping) {
-            ret.push(this.GetInstance(i));
+            const packageServiceInstance = this.GetInstance(i);
+
+            if (packageServiceInstance.IsAvailable()) {
+                ret.push(packageServiceInstance);
+            }
         }
 
         return ret;

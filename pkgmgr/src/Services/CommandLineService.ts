@@ -17,11 +17,19 @@ export default class CommandLineService {
         else if (this._arguments.argv.hasOwnProperty('list')) {
             return 'list';
         }
+        else if (this._arguments.argv.hasOwnProperty('search')) {
+            return 'search';
+        }
 
         return null;
     }
 
     GetOption(name: string): string {
         return this._arguments.argv[name];
+    }
+
+    GetArgument(index: number): string {
+        const args: string[] = (this._arguments.argv as any)._ as string[];
+        return args[index + 1];
     }
 };

@@ -32,12 +32,12 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="app.ts" />
-    <Content Include="examples\sample.yml" />
+    <Content Include="examples\example_apply.yml" />
+    <Content Include="examples\example_config.yml" />
     <Content Include="src\CommandHandlers\CommandHandlerFactory.ts" />
     <Content Include="src\Configuration\Configuration.ts" />
     <Content Include="src\Interfaces\ICommandHandler.ts" />
     <Content Include="package.json" />
-    <Content Include="README.md" />
     <Content Include="src\PackageServices\ChocolateyPackageService.ts" />
     <Content Include="src\Services\YamlSerializationService.ts" />
     <Content Include="tsconfig.json" />
@@ -58,6 +58,7 @@
     <TypeScriptCompile Include="src\CommandHandlers\HelpCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\ListCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\InstallCommand.ts" />
+    <TypeScriptCompile Include="src\CommandHandlers\SearchCommand.ts" />
     <TypeScriptCompile Include="src\Configuration\Models\PackageEntryModel.ts" />
     <TypeScriptCompile Include="src\Configuration\Models\ConfigurationModel.ts" />
     <TypeScriptCompile Include="src\Interfaces\IConfiguration.ts" />
@@ -69,6 +70,7 @@
     <TypeScriptCompile Include="src\PackageServices\Models\PackageModel.ts" />
     <TypeScriptCompile Include="src\PackageServices\PackageServiceFactory.ts" />
     <TypeScriptCompile Include="src\Services\CommandLineService.ts" />
+    <TypeScriptCompile Include="src\Services\ConsoleGUI.ts" />
     <TypeScriptCompile Include="src\Services\ProcessService.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
