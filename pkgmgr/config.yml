@@ -1,0 +1,6 @@
+packageManagers:
+  chocolatey:
+    enabled: true
+    rootCommand: choco
+    getInstalledCommand: list -l --no-progress --nocolor
+    searchCommand: search --no-progress --nocolor

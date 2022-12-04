@@ -4,7 +4,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>pkgmgr</Name>
     <RootNamespace>pkgmgr</RootNamespace>
-    <ScriptArguments>app list --config .\examples\sample.yml</ScriptArguments>
+    <ScriptArguments>app list --config .\examples\example_config.yml</ScriptArguments>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="app.ts" />
+    <Content Include="config.yml" />
     <Content Include="examples\example_apply.yml" />
     <Content Include="examples\example_config.yml" />
     <Content Include="src\CommandHandlers\CommandHandlerFactory.ts" />
@@ -55,10 +56,14 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="consts.ts" />
+    <TypeScriptCompile Include="src\CommandHandlers\ApplyCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\HelpCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\ListCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\InstallCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\SearchCommand.ts" />
+    <TypeScriptCompile Include="src\CommandHandlers\UninstallCommand.ts" />
+    <TypeScriptCompile Include="src\CommandHandlers\UpgradeCommand.ts" />
+    <TypeScriptCompile Include="src\Configuration\Models\ApplyConfigurationModel.ts" />
     <TypeScriptCompile Include="src\Configuration\Models\PackageEntryModel.ts" />
     <TypeScriptCompile Include="src\Configuration\Models\ConfigurationModel.ts" />
     <TypeScriptCompile Include="src\Interfaces\IConfiguration.ts" />

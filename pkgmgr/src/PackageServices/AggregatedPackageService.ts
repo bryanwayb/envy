@@ -9,7 +9,7 @@ export default class ChocolateyPackageService implements IPackageService {
     private _packageServiceFactory = Container.get<IPackageServiceFactory>(DI_IPackageServiceFactory);
 
     async GetInstalled(): Promise<Array<PackageModel>> {
-        const instances = this._packageServiceFactory.GetAllInstances();
+        const instances = await this._packageServiceFactory.GetAllInstances();
 
         const response = new Array<PackageModel>();
         for (const i in instances) {
@@ -21,7 +21,7 @@ export default class ChocolateyPackageService implements IPackageService {
     }
 
     async SearchPackages(query: string): Promise<PackageModel[]> {
-        const instances = this._packageServiceFactory.GetAllInstances();
+        const instances = await this._packageServiceFactory.GetAllInstances();
 
         const response = new Array<PackageModel>();
         for (const i in instances) {

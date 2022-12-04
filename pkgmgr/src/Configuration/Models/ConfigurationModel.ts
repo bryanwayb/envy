@@ -1,5 +1,14 @@
-import { PackageEntryModel } from "./PackageEntryModel";
-
 export class ConfigurationModel {
-    public packages: Array<PackageEntryModel>;
+    public packageManagers: PackageManagersConfigurationModel;
+}
+
+export class PackageManagersConfigurationModel {
+    public chocolatey: ChocolateyConfigurationModel;
+}
+
+export class ChocolateyConfigurationModel {
+    public enabled: boolean;
+    public rootCommand: string;
+    public getInstalledCommand: string;
+    public searchCommand: string;
 }

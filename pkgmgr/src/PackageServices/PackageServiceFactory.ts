@@ -17,13 +17,13 @@ export default class PackageServiceFactory implements IPackageServiceFactory {
         return Container.get<IPackageService>(this._packageManagerMapping[name]);
     }
 
-    GetAllInstances(): IPackageService[] {
+    async GetAllInstances(): Promise<IPackageService[]> {
         const ret = new Array<IPackageService>();
 
         for (const i in this._packageManagerMapping) {
             const packageServiceInstance = this.GetInstance(i);
 
-            if (packageServiceInstance.IsAvailable()) {
+            if (await packageServiceInstance.IsAvailable()) {
                 ret.push(packageServiceInstance);
             }
         }

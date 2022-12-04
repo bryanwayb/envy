@@ -1,15 +1,14 @@
 import Container, { Service } from 'typedi';
 import { IPackageService } from '../Interfaces/IPackageService';
-import { DI_IPackageService_ChocolateyPackageService } from '../../consts';
+import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageService } from '../../consts';
 import ProcessService, { OperatingSystem } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
+import Configuration from '../Configuration/Configuration';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService implements IPackageService {
     private _processService = Container.get(ProcessService);
-
-    private CHOCO_LIST_COMMAND = 'choco list -l --no-progress --nocolor';
-    private CHOCO_SEARCH_COMMAND = 'choco search --no-progress --nocolor';
+    private _configuration = Container.get<Configuration>(DI_IConfiguration_Configuration);
 
     private ParseRawInstalledPackageString(input: string): PackageModel {
         const sections = input.split(' ');
@@ -29,7 +28,8 @@ export default class ChocolateyPackageService implements IPackageService {
     }
 
     async GetInstalled(): Promise<Array<PackageModel>> {
-        const response = await this._processService.Execute(this.CHOCO_LIST_COMMAND);
+        const config = await this._configuration.GetConfiguration();
+        const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.getInstalledCommand}`);
 
         const rawPackages = response.split('\n');
 
@@ -52,7 +52,8 @@ export default class ChocolateyPackageService implements IPackageService {
     }
 
     async SearchPackages(query: string): Promise<PackageModel[]> {
-        const response = await this._processService.Execute(`${this.CHOCO_SEARCH_COMMAND} ${query}`);
+        const config = await this._configuration.GetConfiguration();
+        const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.searchCommand} ${query}`);
 
         const rawPackages = response.split('\n');
 
@@ -75,7 +76,9 @@ export default class ChocolateyPackageService implements IPackageService {
     }
 
     async IsAvailable(): Promise<boolean> {
-        return this._processService.GetOS() === OperatingSystem.Windows
+        const config = await this._configuration.GetConfiguration();
+        return config.packageManagers.chocolatey.enabled
+            && this._processService.GetOS() === OperatingSystem.Windows
             && await this._processService.FindInPath('choco') !== null;
     }
 };
