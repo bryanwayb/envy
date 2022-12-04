@@ -20,6 +20,21 @@ export default class ProcessService {
         }
     }
 
+    async IsAdmin(): Promise<boolean> {
+        switch (this.GetOS()) {
+            case OperatingSystem.Windows:
+                try {
+                    await this.Execute('net session');
+                }
+                catch (ex) {
+                    return false;
+                }
+                return true;
+            default:
+                return true;
+        }
+    }
+
     async FindInPath(executable: string): Promise<string> {
         const os = this.GetOS();
 
@@ -60,7 +75,8 @@ export default class ProcessService {
         return new Promise((resolve, reject) => {
             exec(command, (error: ExecException, stdout: string, stderr: string) => {
                 if (error) {
-                    reject(new Error(error.toString()));
+                    console.log(`STDERR: ${stderr}\nSTDOUT: ${stdout}`);
+                    reject(error);
                 }
                 else {
                     // TODO: Allow stderr response

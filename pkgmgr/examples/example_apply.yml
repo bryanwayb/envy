@@ -14,5 +14,6 @@ packages:
 
 - install: apt
   package: python3-pip
-  remoteType: wsl
-  target: ubuntu
+  target:
+    type: wsl
+    host: ubuntu

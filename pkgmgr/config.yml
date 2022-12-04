@@ -4,3 +4,4 @@ packageManagers:
     rootCommand: choco
     getInstalledCommand: list -l --no-progress --nocolor
     searchCommand: search --no-progress --nocolor
+    installCommand: install -y --no-progress --nocolor --noop

@@ -32,6 +32,10 @@ export default class ChocolateyPackageService implements IPackageService {
         return response;
     }
 
+    InstallPackage(query: string): Promise<void> {
+        throw new Error('Not implemented');
+    }
+
     IsAvailable(): Promise<boolean> {
         return Promise.resolve(true);
     }
