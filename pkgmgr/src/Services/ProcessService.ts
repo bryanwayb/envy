@@ -12,7 +12,7 @@ export enum OperatingSystem {
 
 @Service()
 export default class ProcessService {
-    private readonly _logger = Container.get(LoggerService).Scope(ProcessService);
+    private readonly _logger = Container.get(LoggerService).ScopeByType(ProcessService);
 
     GetOS(): OperatingSystem {
         switch (platform().toLowerCase()) {

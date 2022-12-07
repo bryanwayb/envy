@@ -6,7 +6,7 @@ import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
 @Service(DI_IPackageServiceFactory)
 export default class PackageServiceFactory implements IPackageServiceFactory {
     private _packageManagerMapping: { [key: string]: string } = {
-        "chocolatey": DI_IPackageService_ChocolateyPackageService
+        "choco": DI_IPackageService_ChocolateyPackageService
     };
 
     GetInstance(name: string): IPackageService {

@@ -4,7 +4,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>pkgmgr</Name>
     <RootNamespace>pkgmgr</RootNamespace>
-    <ScriptArguments>app search "visual studio"</ScriptArguments>
+    <ScriptArguments>app search "vscode"</ScriptArguments>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -56,6 +56,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="consts.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\ApplyCommand.ts" />
+    <TypeScriptCompile Include="src\CommandHandlers\BaseCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\HelpCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\ListCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\InstallCommand.ts" />

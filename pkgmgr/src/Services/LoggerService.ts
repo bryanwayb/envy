@@ -1,4 +1,5 @@
-import { Service } from 'typedi';
+import Container, { Service } from 'typedi';
+import CommandLineService from './CommandLineService';
 
 export enum LogLevel {
     Trace,
@@ -18,6 +19,8 @@ function logLevelToString(logLevel: LogLevel): string {
 
 @Service()
 export default class LoggerService {
+    private readonly _commandLineService = Container.get(CommandLineService);
+    private readonly _enableConsoleOutput = this._commandLineService.IsVerbose();
     private readonly _scope: string = null;
 
     constructor(scope: string = null) {
@@ -27,15 +30,21 @@ export default class LoggerService {
     }
 
     Log(logLevel: LogLevel, input: string): void {
-        console.log(`[${this._scope ? `${this._scope},` : ''}${logLevelToString(logLevel)}]: ${input}`);
+        if (this._enableConsoleOutput) {
+            console.log(`[${this._scope ? `${this._scope},` : ''}${logLevelToString(logLevel)}]: ${input}`);
+        }
     }
 
     LogTrace(input: string): void {
         this.Log(LogLevel.Trace, input);
     }
 
-    Scope<T>(type: new () => T): LoggerService {
+    ScopeByType<T>(type: new () => T): LoggerService {
         return new LoggerService(type.name);
+    }
+
+    ScopeByName(type: string): LoggerService {
+        return new LoggerService(type);
     }
 
     Serialize<T>(data: T): string {

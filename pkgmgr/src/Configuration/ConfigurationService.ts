@@ -11,7 +11,7 @@ import LoggerService from '../Services/LoggerService';
 export default class ConfigurationService implements IConfiguration {
     private readonly _yamlSerializationService = Container.get(YamlSerializationService);
     private readonly _commandLineService = Container.get(CommandLineService);
-    private readonly _logger = Container.get(LoggerService).Scope(ConfigurationService);
+    private readonly _logger = Container.get(LoggerService).ScopeByType(ConfigurationService);
 
     private _configurationModel: ConfigurationModel;
 

@@ -10,11 +10,11 @@ import LoggerService from '../Services/LoggerService';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService implements IPackageService {
-    ServiceIdentifier = 'chocolatey';
+    ServiceIdentifier = 'choco';
 
     private _processService = Container.get(ProcessService);
     private _formatterService = Container.get<FormatterService>(FormatterService);
-    private _logger = Container.get(LoggerService).Scope(ChocolateyPackageService);
+    private _logger = Container.get(LoggerService).ScopeByType(ChocolateyPackageService);
 
     private async GetConfiguration(): Promise<ChocolateyConfigurationModel> {
         const configuraitonService = Container.get<ConfigurationService>(DI_IConfiguration_Configuration)
@@ -76,9 +76,11 @@ export default class ChocolateyPackageService implements IPackageService {
         return await this._processService.Execute(commandLine);
     }
 
-    async GetInstalled(): Promise<Array<PackageModel>> {
+    async GetInstalled(packageModel?: PackageModel): Promise<Array<PackageModel>> {
         const config = await this.GetConfiguration();
-        const response = await this.ExecuteCommand(config.getInstalledCommand);
+        const response = await this.ExecuteCommand(config.getInstalledCommand, {
+            package: packageModel
+        });
 
         return this.ParseRawChocolateyPackageList(response);
     }
@@ -128,10 +130,10 @@ export default class ChocolateyPackageService implements IPackageService {
         return null;
     }
 
-    async SearchPackages(query: string): Promise<PackageModel[]> {
+    async SearchPackages(packageModel: PackageModel): Promise<PackageModel[]> {
         const config = await this.GetConfiguration();
         const response = await this.ExecuteCommand(config.searchCommand, {
-            query
+            package: packageModel
         });
 
         return this.ParseRawChocolateyPackageList(response);
