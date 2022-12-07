@@ -76,6 +76,7 @@
     <TypeScriptCompile Include="src\PackageServices\PackageServiceFactory.ts" />
     <TypeScriptCompile Include="src\Services\CommandLineService.ts" />
     <TypeScriptCompile Include="src\Services\ConsoleGUI.ts" />
+    <TypeScriptCompile Include="src\Services\FormatterService.ts" />
     <TypeScriptCompile Include="src\Services\ProcessService.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />

@@ -4,6 +4,7 @@ import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageSe
 import ProcessService, { OperatingSystem } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
 import Configuration from '../Configuration/Configuration';
+import FormatterService from '../Services/FormatterService';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService implements IPackageService {
@@ -11,6 +12,7 @@ export default class ChocolateyPackageService implements IPackageService {
 
     private _processService = Container.get(ProcessService);
     private _configuration = Container.get<Configuration>(DI_IConfiguration_Configuration);
+    private _formatterService = Container.get<FormatterService>(FormatterService);
 
     private ParseRawInstalledPackageString(input: string): PackageModel {
         const sections = input.split(' ');
@@ -71,7 +73,13 @@ export default class ChocolateyPackageService implements IPackageService {
 
     async SearchPackages(query: string): Promise<PackageModel[]> {
         const config = await this._configuration.GetConfiguration();
-        const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.searchCommand} ${query}`);
+
+        const commandLine = this._formatterService.String(config.packageManagers.chocolatey.searchCommand, {
+            ...config.packageManagers.chocolatey,
+            query
+        });
+
+        const response = await this._processService.Execute(commandLine);
 
         const rawPackages = response.split('\n');
 
