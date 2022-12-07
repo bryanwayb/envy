@@ -1,10 +1,16 @@
 packageManagers:
   chocolatey:
     enabled: true
+    safeMode: true
+    dryRun: true
     rootCommand: choco
-    getInstalledCommand: '{{rootCommand}} list -l --no-progress --nocolor'
-    searchCommand: '{{rootCommand}} search --no-progress --nocolor "{{query}}"'
-    installCommand: '{{rootCommand}} install -y --no-progress --nocolor --noop {{package.Name}} --version {{package.Version}}'
-    isInstalledCommand: '{{rootCommand}} search --no-progress --no-color -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}}'
-    getExistingInstalledVersionCommand: '{{rootCommand}} search --no-progress --no-color -l -e {{package.Name}}'
-    isPackageAvaiableForInstallCommand: '{{rootCommand}} search --no-progress --no-color -e {{package.Name}} {{#if package.Version}}-a --version {{package.Version}}{{/if}}'
+
+    globalSwitches: '--no-progress --nocolor'
+    safeModeSearchSwitch: '{{#if safeMode}}--approved-only --not-broken{{/if}}'
+
+    getInstalledCommand: '{{rootCommand}} list -l {{globalSwitches}}'
+    searchCommand: '{{rootCommand}} search {{globalSwitches}} "{{query}}" {{> safeModeSearchSwitch}}'
+    installCommand: '{{rootCommand}} install {{globalSwitches}} -y {{#if dryRun}}--noop{{/if}} {{#if safeMode}}--exit-when-reboot-detected{{/if}} {{package.Name}} --version {{package.Version}}'
+    isInstalledCommand: '{{rootCommand}} search {{globalSwitches}} -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}} {{> safeModeSearchSwitch}}'
+    getExistingInstalledVersionCommand: '{{rootCommand}} search {{globalSwitches}} -l -e {{package.Name}} {{> safeModeSearchSwitch}}'
+    isPackageAvaiableForInstallCommand: '{{rootCommand}} search {{globalSwitches}} -e {{package.Name}} {{#if package.Version}}-a --version {{package.Version}}{{/if}} {{> safeModeSearchSwitch}}'

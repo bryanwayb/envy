@@ -4,7 +4,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>pkgmgr</Name>
     <RootNamespace>pkgmgr</RootNamespace>
-    <ScriptArguments>app install --manager choco asdfjashdfasf</ScriptArguments>
+    <ScriptArguments>app search "visual studio"</ScriptArguments>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -71,7 +71,6 @@
     <TypeScriptCompile Include="src\Interfaces\ICommandHandlerFactory.ts" />
     <TypeScriptCompile Include="preloader.ts" />
     <TypeScriptCompile Include="src\Interfaces\IPackageServiceFactory.ts" />
-    <TypeScriptCompile Include="src\PackageServices\AggregatedPackageService.ts" />
     <TypeScriptCompile Include="src\PackageServices\Models\PackageModel.ts" />
     <TypeScriptCompile Include="src\PackageServices\PackageServiceFactory.ts" />
     <TypeScriptCompile Include="src\Services\CommandLineService.ts" />

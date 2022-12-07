@@ -112,6 +112,7 @@ export default class InstallCommand implements ICommandHandler {
 
             this._logger.LogTrace(`attempting to install ${packageToInstall}`);
             await packageService.InstallPackage(packageToInstall);
+            this._logger.LogTrace(`installed ${packageToInstall}`);
         }
 
         this._logger.LogTrace(`installation finished`);

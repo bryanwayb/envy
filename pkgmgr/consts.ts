@@ -8,4 +8,3 @@ export const DI_IConfiguration_Configuration = 'IConfiguration<Configuration>';
 
 export const DI_IPackageServiceFactory = 'IPackageServiceFactory';
 export const DI_IPackageService_ChocolateyPackageService = 'IPackageService<ChocolateyPackageService>';
-export const DI_IPackageService_AggregatedPackageService = 'IPackageService<AggregatedPackageService>';
