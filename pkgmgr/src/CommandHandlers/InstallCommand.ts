@@ -41,7 +41,7 @@ export default class InstallCommand implements ICommandHandler {
             const currentPackageManager = packageManagers[i];
 
             this._logger.LogTrace(`checking if ${currentPackageManager.ServiceIdentifier} has package ${packageModel}`);
-            if (await currentPackageManager.IsPackageAvaiable(packageModel)) {
+            if (await currentPackageManager.GetPackageAvaiableForInstall(packageModel)) {
                 this._logger.LogTrace(`package ${packageModel} was found in ${currentPackageManager.ServiceIdentifier}`);
                 results.push(currentPackageManager.ServiceIdentifier);
             }
@@ -78,18 +78,27 @@ export default class InstallCommand implements ICommandHandler {
             }
 
             const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager);
+            this._logger.LogTrace(`attempting to resolve ${passedPackage}`);
 
-            this._logger.LogTrace(`checking if ${passedPackage} is already installed`);
-            if (await packageService.IsInstalled(passedPackage)) {
-                throw new Error(`Package ${passedPackage} is already installed`);
+            const resolvedPackage = await packageService.GetPackageAvaiableForInstall(passedPackage);
+            if (!resolvedPackage) {
+                throw new Error(`Package ${passedPackage} was not found`);
             }
 
-            this._logger.LogTrace(`checking if ${passedPackage} has an update waiting`);
-            if (await packageService.IsUpdateRequired(passedPackage)) {
-                throw new Error(`Package ${passedPackage} is already installed, but an update is available`);
+            this._logger.LogTrace(`package ${passedPackage} resolved to ${resolvedPackage}`);
+
+            this._logger.LogTrace(`checking if ${resolvedPackage} is already installed`);
+            if (await packageService.IsInstalled(resolvedPackage)) {
+                throw new Error(`Package ${resolvedPackage} is already installed`);
             }
 
-            results.push(passedPackage);
+            this._logger.LogTrace(`checking if ${resolvedPackage} has a different installed version`);
+            const existingInstalledVersion = await packageService.GetExistingInstalledVersion(resolvedPackage);
+            if (existingInstalledVersion) {
+                throw new Error(`Package ${resolvedPackage} already has a different version installed as ${existingInstalledVersion}`);
+            }
+
+            results.push(resolvedPackage);
         }
 
         return results;

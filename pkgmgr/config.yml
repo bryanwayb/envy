@@ -6,3 +6,5 @@ packageManagers:
     searchCommand: '{{rootCommand}} search --no-progress --nocolor "{{query}}"'
     installCommand: '{{rootCommand}} install -y --no-progress --nocolor --noop'
     isInstalledCommand: '{{rootCommand}} search --no-progress --no-color -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}}'
+    getExistingInstalledVersionCommand: '{{rootCommand}} search --no-progress --no-color -l -e {{package.Name}}'
+    isPackageAvaiableForInstallCommand: '{{rootCommand}} search --no-progress --no-color -e {{package.Name}} {{#if package.Version}}-a --version {{package.Version}}{{/if}}'

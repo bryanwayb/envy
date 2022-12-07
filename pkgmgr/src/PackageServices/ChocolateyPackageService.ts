@@ -28,10 +28,12 @@ export default class ChocolateyPackageService implements IPackageService {
         if (sections.length >= 2) {
             const packageEntry = new PackageModel();
 
-            packageEntry.Manager = 'chocolatey';
+            packageEntry.Manager = this.ServiceIdentifier;
             packageEntry.Name = sections[0].trim();
             packageEntry.Version = sections[1].trim();
             //packageEntry.Description = sections.splice(2).join(' ').trim();
+
+            this._logger.LogTrace(`parsed ${packageEntry} from: ${input}`);
 
             return packageEntry;
         }
@@ -50,6 +52,9 @@ export default class ChocolateyPackageService implements IPackageService {
             else if (rawPackages[i].indexOf('packages installed.') !== -1) {
                 break;
             }
+            else if (rawPackages[i].indexOf('packages found.') !== -1) {
+                break;
+            }
 
             const parsed = this.ParseRawInstalledPackageString(rawPackages[i]);
             if (parsed) {
@@ -63,7 +68,7 @@ export default class ChocolateyPackageService implements IPackageService {
     private async ExecuteCommand<T>(commandTemplate: string, data: T = null): Promise<string> {
         const config = await this.GetConfiguration();
 
-        const commandLine = this._formatterService.String(config.searchCommand, {
+        const commandLine = this._formatterService.String(commandTemplate, {
             ...config,
             ...data
         });
@@ -89,16 +94,38 @@ export default class ChocolateyPackageService implements IPackageService {
         return foundResults.filter(f => f.Equals(packageModel)).length === 1;
     }
 
-    IsPackageAvaiable(packageModel: PackageModel): Promise<boolean> {
-        return Promise.resolve(true);
+    async GetPackageAvaiableForInstall(packageModel: PackageModel): Promise<PackageModel> {
+        const config = await this.GetConfiguration();
+        const response = await this.ExecuteCommand(config.isPackageAvaiableForInstallCommand, {
+            package: packageModel
+        });
+
+        const foundResults = this.ParseRawChocolateyPackageList(response);
+
+        const filteredResults = foundResults.filter(f => packageModel.Name === f.Name);
+
+        if (filteredResults.length === 1) {
+            return filteredResults[0];
+        }
+
+        return null;
     }
 
-    IsUpdateAvailable(packageModel: PackageModel): Promise<boolean> {
-        return Promise.resolve(true);
-    }
+    async GetExistingInstalledVersion(packageModel: PackageModel): Promise<PackageModel> {
+        const config = await this.GetConfiguration();
+        const response = await this.ExecuteCommand(config.getExistingInstalledVersionCommand, {
+            package: packageModel
+        });
 
-    IsUpdateRequired(packageModel: PackageModel): Promise<boolean> {
-        return Promise.resolve(true);
+        const foundResults = this.ParseRawChocolateyPackageList(response);
+        const filteredResults = foundResults.filter(f => packageModel.Name === f.Name
+            && packageModel.Manager === f.Manager);
+
+        if (filteredResults.length === 1) {
+            return filteredResults[0];
+        }
+
+        return null;
     }
 
     async SearchPackages(query: string): Promise<PackageModel[]> {

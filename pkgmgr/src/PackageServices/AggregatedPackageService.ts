@@ -47,13 +47,10 @@ export default class ChocolateyPackageService implements IPackageService {
     IsInstalled(packageModel: PackageModel): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-    IsPackageAvaiable(packageModel: PackageModel): Promise<boolean> {
+    GetPackageAvaiableForInstall(packageModel: PackageModel): Promise<PackageModel> {
         throw new Error('Method not implemented.');
     }
-    IsUpdateAvailable(packageModel: PackageModel): Promise<boolean> {
-        throw new Error('Method not implemented.');
-    }
-    IsUpdateRequired(packageModel: PackageModel): Promise<boolean> {
+    GetExistingInstalledVersion(packageModel: PackageModel): Promise<PackageModel> {
         throw new Error('Method not implemented.');
     }
 };
