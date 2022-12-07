@@ -1,9 +1,10 @@
 import { Service } from 'typedi';
-import * as stringFormat from 'string-format';
+import { compile } from 'handlebars';
 
 @Service()
 export default class FormatterService {
     String<T>(input: string, data: T): string {
-        return stringFormat(input, data) as string;
+        const template = compile(input);
+        return template(data);
     }
 };

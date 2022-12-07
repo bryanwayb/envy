@@ -2,6 +2,7 @@ packageManagers:
   chocolatey:
     enabled: true
     rootCommand: choco
-    getInstalledCommand: '{rootCommand} list -l --no-progress --nocolor'
-    searchCommand: '{rootCommand} search --no-progress --nocolor "{query}"'
-    installCommand: '{rootCommand} install -y --no-progress --nocolor --noop'
+    getInstalledCommand: '{{rootCommand}} list -l --no-progress --nocolor'
+    searchCommand: '{{rootCommand}} search --no-progress --nocolor "{{query}}"'
+    installCommand: '{{rootCommand}} install -y --no-progress --nocolor --noop'
+    isInstalledCommand: '{{rootCommand}} search --no-progress --no-color -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}}'

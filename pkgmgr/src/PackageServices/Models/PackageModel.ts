@@ -43,6 +43,13 @@ export class PackageModel {
         return null;
     }
 
+    public Equals(packageModel: PackageModel): boolean {
+        return packageModel
+            && packageModel.Manager === this.Manager
+            && packageModel.Name === this.Name
+            && packageModel.Version === this.Version;
+    }
+
     public toString(): string {
         return `${this.HasManager() ? `${this.Manager}:` : ''}${this.HasName() ? `${this.Name}` : ''}${this.HasVersion() ? `@${this.Version}` : ''}`;
     }

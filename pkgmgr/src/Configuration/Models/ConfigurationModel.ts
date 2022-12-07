@@ -12,4 +12,5 @@ export class ChocolateyConfigurationModel {
     public getInstalledCommand: string;
     public searchCommand: string;
     public installCommand: string;
+    public isInstalledCommand: string;
 }

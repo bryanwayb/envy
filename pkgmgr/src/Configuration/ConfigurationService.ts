@@ -5,17 +5,15 @@ import { ConfigurationModel } from './Models/ConfigurationModel';
 import YamlSerializationService from '../Services/YamlSerializationService';
 import CommandLineService from '../Services/CommandLineService';
 import { resolve } from 'path';
+import LoggerService from '../Services/LoggerService';
 
 @Service(DI_IConfiguration_Configuration)
-export default class Configuration implements IConfiguration {
-    private _yamlSerializationService: YamlSerializationService;
-    private _commandLineService: CommandLineService;
-    private _configurationModel: ConfigurationModel;
+export default class ConfigurationService implements IConfiguration {
+    private readonly _yamlSerializationService = Container.get(YamlSerializationService);
+    private readonly _commandLineService = Container.get(CommandLineService);
+    private readonly _logger = Container.get(LoggerService).Scope(ConfigurationService);
 
-    constructor() {
-        this._yamlSerializationService = Container.get(YamlSerializationService);
-        this._commandLineService = Container.get(CommandLineService);
-    }
+    private _configurationModel: ConfigurationModel;
 
     // This is only a shallow merge, deep references will still point to their original values
     private MergeObjects<T>(...objects: T[]): T {
@@ -30,17 +28,26 @@ export default class Configuration implements IConfiguration {
 
     async GetConfiguration(): Promise<ConfigurationModel> {
         if (!this._configurationModel) {
-            const defaultConfiguration = await this._yamlSerializationService.LoadYamlFromFile<ConfigurationModel>(resolve(__dirname, '../../config.yml'));
+            this._logger.LogTrace(`loading configuration`);
+
+            const defaultConfigurationFilePath = resolve(__dirname, '../../config.yml');
+
+            this._logger.LogTrace(`using config file path "${defaultConfigurationFilePath}"`);
+
+            const defaultConfiguration = await this._yamlSerializationService.LoadYamlFromFile<ConfigurationModel>(defaultConfigurationFilePath);
 
             const configurationFilePath = this._commandLineService.GetOption("config");
             if (configurationFilePath
                 && configurationFilePath.trim() !== '') {
+                this._logger.LogTrace(`loading additional config override file, "${configurationFilePath}"`);
                 const suppliedConfiguration = await this._yamlSerializationService.LoadYamlFromFile<ConfigurationModel>(configurationFilePath);
                 this._configurationModel = this.MergeObjects(defaultConfiguration, suppliedConfiguration);
             }
             else {
                 this._configurationModel = defaultConfiguration;
             }
+
+            this._logger.LogTrace(`active config: ${this._logger.Serialize(this._configurationModel)}`);
         }
 
         return this._configurationModel;

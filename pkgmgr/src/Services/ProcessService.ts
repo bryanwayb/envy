@@ -2,7 +2,8 @@ import { exec, ExecException } from 'child_process';
 import { lstat } from 'fs/promises';
 import { platform } from 'os';
 import { join } from 'path';
-import { Service } from 'typedi';
+import Container, { Service } from 'typedi';
+import LoggerService from './LoggerService';
 
 export enum OperatingSystem {
     Windows,
@@ -11,6 +12,8 @@ export enum OperatingSystem {
 
 @Service()
 export default class ProcessService {
+    private readonly _logger = Container.get(LoggerService).Scope(ProcessService);
+
     GetOS(): OperatingSystem {
         switch (platform().toLowerCase()) {
             case 'win32':
@@ -21,12 +24,15 @@ export default class ProcessService {
     }
 
     async IsAdmin(): Promise<boolean> {
+        this._logger.LogTrace('checking if running as admin');
         switch (this.GetOS()) {
             case OperatingSystem.Windows:
                 try {
                     await this.Execute('net session');
+                    this._logger.LogTrace('process running as admin');
                 }
                 catch (ex) {
+                    this._logger.LogTrace('process not running as admin');
                     return false;
                 }
                 return true;
@@ -73,9 +79,13 @@ export default class ProcessService {
 
     Execute(command: string): Promise<string> {
         return new Promise((resolve, reject) => {
+            this._logger.LogTrace(`executing command: ${command}`);
             exec(command, (error: ExecException, stdout: string, stderr: string) => {
+                this._logger.LogTrace(`command results: ${command}
+Error: ${error}
+stderr: ${stderr}
+stdout: ${stdout}`);
                 if (error) {
-                    console.log(`STDERR: ${stderr}\nSTDOUT: ${stdout}`);
                     reject(error);
                 }
                 else {
