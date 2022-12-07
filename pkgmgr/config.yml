@@ -4,7 +4,7 @@ packageManagers:
     rootCommand: choco
     getInstalledCommand: '{{rootCommand}} list -l --no-progress --nocolor'
     searchCommand: '{{rootCommand}} search --no-progress --nocolor "{{query}}"'
-    installCommand: '{{rootCommand}} install -y --no-progress --nocolor --noop'
+    installCommand: '{{rootCommand}} install -y --no-progress --nocolor --noop {{package.Name}} --version {{package.Version}}'
     isInstalledCommand: '{{rootCommand}} search --no-progress --no-color -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}}'
     getExistingInstalledVersionCommand: '{{rootCommand}} search --no-progress --no-color -l -e {{package.Name}}'
     isPackageAvaiableForInstallCommand: '{{rootCommand}} search --no-progress --no-color -e {{package.Name}} {{#if package.Version}}-a --version {{package.Version}}{{/if}}'

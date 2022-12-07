@@ -138,10 +138,13 @@ export default class ChocolateyPackageService implements IPackageService {
     }
 
     async InstallPackage(packageModel: PackageModel): Promise<void> {
-        //const config = await this._configuration.GetConfiguration();
-        //const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.installCommand} ${query}`);
+        const config = await this.GetConfiguration();
 
-        //console.log(response);
+        // TODO: Handle response codes
+
+        await this.ExecuteCommand(config.installCommand, {
+            package: packageModel
+        });
     }
 
     async IsServiceAvailable(): Promise<boolean> {
