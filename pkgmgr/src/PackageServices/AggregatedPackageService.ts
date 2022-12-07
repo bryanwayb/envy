@@ -4,8 +4,12 @@ import { DI_IPackageServiceFactory, DI_IPackageService_AggregatedPackageService 
 import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
 import { PackageModel } from './Models/PackageModel';
 
+// TODO: Remove this and instead call each package manager as needed
+
 @Service(DI_IPackageService_AggregatedPackageService)
 export default class ChocolateyPackageService implements IPackageService {
+    ServiceIdentifier = 'na';
+
     private _packageServiceFactory = Container.get<IPackageServiceFactory>(DI_IPackageServiceFactory);
 
     async GetInstalled(): Promise<Array<PackageModel>> {
@@ -32,11 +36,24 @@ export default class ChocolateyPackageService implements IPackageService {
         return response;
     }
 
-    InstallPackage(query: string): Promise<void> {
+    InstallPackage(packageModel: PackageModel): Promise<void> {
         throw new Error('Not implemented');
     }
 
-    IsAvailable(): Promise<boolean> {
+    IsServiceAvailable(): Promise<boolean> {
         return Promise.resolve(true);
+    }
+
+    IsInstalled(packageModel: PackageModel): Promise<boolean> {
+        throw new Error('Method not implemented.');
+    }
+    IsPackageAvaiable(packageModel: PackageModel): Promise<boolean> {
+        throw new Error('Method not implemented.');
+    }
+    IsUpdateAvailable(packageModel: PackageModel): Promise<boolean> {
+        throw new Error('Method not implemented.');
+    }
+    IsUpdateRequired(packageModel: PackageModel): Promise<boolean> {
+        throw new Error('Method not implemented.');
     }
 };

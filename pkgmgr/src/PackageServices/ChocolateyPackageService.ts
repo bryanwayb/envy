@@ -7,6 +7,8 @@ import Configuration from '../Configuration/Configuration';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService implements IPackageService {
+    ServiceIdentifier = 'chocolatey';
+
     private _processService = Container.get(ProcessService);
     private _configuration = Container.get<Configuration>(DI_IConfiguration_Configuration);
 
@@ -51,6 +53,22 @@ export default class ChocolateyPackageService implements IPackageService {
         return packages;
     }
 
+    IsInstalled(packageModel: PackageModel): Promise<boolean> {
+        return Promise.resolve(false);
+    }
+
+    IsPackageAvaiable(packageModel: PackageModel): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+
+    IsUpdateAvailable(packageModel: PackageModel): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+
+    IsUpdateRequired(packageModel: PackageModel): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+
     async SearchPackages(query: string): Promise<PackageModel[]> {
         const config = await this._configuration.GetConfiguration();
         const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.searchCommand} ${query}`);
@@ -75,14 +93,14 @@ export default class ChocolateyPackageService implements IPackageService {
         return packages;
     }
 
-    async InstallPackage(query: string): Promise<void> {
-        const config = await this._configuration.GetConfiguration();
-        const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.installCommand} ${query}`);
+    async InstallPackage(packageModel: PackageModel): Promise<void> {
+        //const config = await this._configuration.GetConfiguration();
+        //const response = await this._processService.Execute(`${config.packageManagers.chocolatey.rootCommand} ${config.packageManagers.chocolatey.installCommand} ${query}`);
 
-        console.log(response);
+        //console.log(response);
     }
 
-    async IsAvailable(): Promise<boolean> {
+    async IsServiceAvailable(): Promise<boolean> {
         const config = await this._configuration.GetConfiguration();
         return config.packageManagers.chocolatey.enabled
             && this._processService.GetOS() === OperatingSystem.Windows

@@ -6,7 +6,7 @@ import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
 @Service(DI_IPackageServiceFactory)
 export default class PackageServiceFactory implements IPackageServiceFactory {
     private _packageManagerMapping: { [key: string]: string } = {
-        "choco": DI_IPackageService_ChocolateyPackageService
+        "chocolatey": DI_IPackageService_ChocolateyPackageService
     };
 
     GetInstance(name: string): IPackageService {
@@ -23,7 +23,7 @@ export default class PackageServiceFactory implements IPackageServiceFactory {
         for (const i in this._packageManagerMapping) {
             const packageServiceInstance = this.GetInstance(i);
 
-            if (await packageServiceInstance.IsAvailable()) {
+            if (await packageServiceInstance.IsServiceAvailable()) {
                 ret.push(packageServiceInstance);
             }
         }
