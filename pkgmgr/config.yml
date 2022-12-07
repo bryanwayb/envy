@@ -11,6 +11,6 @@ packageManagers:
     getInstalledCommand: '{{rootCommand}} list -l {{globalSwitches}}'
     searchCommand: '{{rootCommand}} search {{globalSwitches}} "{{query}}" {{> safeModeSearchSwitch}}'
     installCommand: '{{rootCommand}} install {{globalSwitches}} -y {{#if dryRun}}--noop{{/if}} {{#if safeMode}}--exit-when-reboot-detected{{/if}} {{package.Name}} --version {{package.Version}}'
-    isInstalledCommand: '{{rootCommand}} search {{globalSwitches}} -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}} {{> safeModeSearchSwitch}}'
-    getExistingInstalledVersionCommand: '{{rootCommand}} search {{globalSwitches}} -l -e {{package.Name}} {{> safeModeSearchSwitch}}'
+    isInstalledCommand: '{{rootCommand}} search {{globalSwitches}} -l {{package.Name}} {{#if package.Version}}--version {{package.Version}}{{/if}}'
+    getExistingInstalledVersionCommand: '{{rootCommand}} search {{globalSwitches}} -l -e {{package.Name}}'
     isPackageAvaiableForInstallCommand: '{{rootCommand}} search {{globalSwitches}} -e {{package.Name}} {{#if package.Version}}-a --version {{package.Version}}{{/if}} {{> safeModeSearchSwitch}}'
