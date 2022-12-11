@@ -29,8 +29,12 @@ export default class LoggerService {
         }
     }
 
+    IsEnabled(logLevel: LogLevel): boolean {
+        return this._enableConsoleOutput;
+    }
+
     Log(logLevel: LogLevel, input: string): void {
-        if (this._enableConsoleOutput) {
+        if (this.IsEnabled(logLevel)) {
             console.log(`[${this._scope ? `${this._scope},` : ''}${logLevelToString(logLevel)}]: ${input}`);
         }
     }

@@ -7,8 +7,6 @@ import BaseCommand from './BaseCommand';
 
 @Service(DI_ICommandHandler_ListCommand)
 export default class ListCommand extends BaseCommand implements ICommandHandler {
-    private readonly _packageServiceFactory = Container.get<IPackageServiceFactory>(DI_IPackageServiceFactory);
-
     async Execute(): Promise<number> {
         this._logger.LogTrace(`getting installed packages`);
 
@@ -25,14 +23,14 @@ export default class ListCommand extends BaseCommand implements ICommandHandler 
                     this._logger.LogTrace(`package ${passedPackage} has no manager supplied, querying all managers`);
                     for (const i in packageServices) {
                         const packageService = packageServices[i];
-                        const packageServicePackages = await packageService.GetInstalled(passedPackage);
+                        const packageServicePackages = await packageService.FilterInstalled(passedPackage);
                         foundPackages.push(...packageServicePackages);
                     }
                 }
                 else {
                     this._logger.LogTrace(`package ${passedPackage} supplied manager ${passedPackage.Manager}`);
                     const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager);
-                    const packageServicePackages = await packageService.GetInstalled(passedPackage);
+                    const packageServicePackages = await packageService.FilterInstalled(passedPackage);
                     foundPackages.push(...packageServicePackages);
                 }
             }
@@ -40,7 +38,7 @@ export default class ListCommand extends BaseCommand implements ICommandHandler 
         else {
             for (const i in packageServices) {
                 const packageService = packageServices[i];
-                const packageServicePackages = await packageService.GetInstalled();
+                const packageServicePackages = await packageService.FilterInstalled();
                 foundPackages.push(...packageServicePackages);
             }
         }

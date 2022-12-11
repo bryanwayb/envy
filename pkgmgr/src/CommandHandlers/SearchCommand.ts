@@ -1,14 +1,11 @@
-import Container, { Service } from 'typedi';
+import { Service } from 'typedi';
 import { ICommandHandler } from '../Interfaces/ICommandHandler';
-import { DI_ICommandHandler_SearchCommand, DI_IPackageServiceFactory } from '../../consts';
-import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
+import { DI_ICommandHandler_SearchCommand } from '../../consts';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import BaseCommand from './BaseCommand';
 
 @Service(DI_ICommandHandler_SearchCommand)
 export default class SearchCommand extends BaseCommand implements ICommandHandler {
-    private readonly _packageServiceFactory = Container.get<IPackageServiceFactory>(DI_IPackageServiceFactory);
-
     async Execute(): Promise<number> {
         this._logger.LogTrace(`searching for packages`);
 

@@ -5,12 +5,14 @@ export interface IPackageService {
 
     IsServiceAvailable(): Promise<boolean>;
 
-    GetInstalled(packageModel?: PackageModel): Promise<Array<PackageModel>>;
     IsInstalled(packageModel: PackageModel): Promise<boolean>;
+    GetInstalledPackage(packageModel: PackageModel): Promise<PackageModel>;
 
+    FilterInstalled(packageModel?: PackageModel): Promise<Array<PackageModel>>;
     GetPackageAvaiableForInstall(packageModel: PackageModel): Promise<PackageModel>;
     GetExistingInstalledVersion(packageModel: PackageModel): Promise<PackageModel>;
     SearchPackages(packageModel: PackageModel): Promise<Array<PackageModel>>;
 
     InstallPackage(packageModel: PackageModel): Promise<void>;
+    UninstallPackage(packageModel: PackageModel): Promise<void>;
 };

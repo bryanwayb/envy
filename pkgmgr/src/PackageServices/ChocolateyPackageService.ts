@@ -73,12 +73,20 @@ export default class ChocolateyPackageService implements IPackageService {
             ...data
         });
 
-        return await this._processService.Execute(commandLine);
+        return await this._processService.Execute(commandLine, data => {
+            if (data.indexOf('[A]ll') !== -1) {
+                return 'A\n';
+            }
+            else if (data.indexOf('[Y]es') !== -1) {
+                return 'Y\n';
+            }
+            return null;
+        });
     }
 
-    async GetInstalled(packageModel?: PackageModel): Promise<Array<PackageModel>> {
+    async FilterInstalled(packageModel?: PackageModel): Promise<Array<PackageModel>> {
         const config = await this.GetConfiguration();
-        const response = await this.ExecuteCommand(config.getInstalledCommand, {
+        const response = await this.ExecuteCommand(config.filterInstalledCommand, {
             package: packageModel
         });
 
@@ -94,6 +102,18 @@ export default class ChocolateyPackageService implements IPackageService {
         const foundResults = this.ParseRawChocolateyPackageList(response);
 
         return foundResults.filter(f => f.Equals(packageModel)).length === 1;
+    }
+
+    async GetInstalledPackage(packageModel: PackageModel): Promise<PackageModel> {
+        const config = await this.GetConfiguration();
+        const response = await this.ExecuteCommand(config.getInstalledPackageCommand, {
+            package: packageModel
+        });
+
+        const foundResults = this.ParseRawChocolateyPackageList(response);
+        const filteredResults = foundResults.filter(f => f.Name === packageModel.Name);
+
+        return filteredResults.length > 0 ? filteredResults[0] : null;
     }
 
     async GetPackageAvaiableForInstall(packageModel: PackageModel): Promise<PackageModel> {
@@ -145,6 +165,16 @@ export default class ChocolateyPackageService implements IPackageService {
         // TODO: Handle response codes
 
         await this.ExecuteCommand(config.installCommand, {
+            package: packageModel
+        });
+    }
+
+    async UninstallPackage(packageModel: PackageModel): Promise<void> {
+        const config = await this.GetConfiguration();
+
+        // TODO: Handle response codes
+
+        await this.ExecuteCommand(config.uninstallCommand, {
             package: packageModel
         });
     }

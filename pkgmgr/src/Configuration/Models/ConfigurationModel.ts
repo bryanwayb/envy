@@ -9,9 +9,11 @@ export class PackageManagersConfigurationModel {
 export class ChocolateyConfigurationModel {
     public enabled: boolean;
     public rootCommand: string;
-    public getInstalledCommand: string;
+    public filterInstalledCommand: string;
+    public getInstalledPackageCommand: string;
     public searchCommand: string;
     public installCommand: string;
+    public uninstallCommand: string;
     public isInstalledCommand: string;
     public getExistingInstalledVersionCommand: string;
     public isPackageAvaiableForInstallCommand: string;

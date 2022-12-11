@@ -3,7 +3,7 @@ import { lstat } from 'fs/promises';
 import { platform } from 'os';
 import { join } from 'path';
 import Container, { Service } from 'typedi';
-import LoggerService from './LoggerService';
+import LoggerService, { LogLevel } from './LoggerService';
 
 export enum OperatingSystem {
     Windows,
@@ -77,10 +77,10 @@ export default class ProcessService {
         return null;
     }
 
-    Execute(command: string): Promise<string> {
+    Execute(command: string, interactiveHandler?: (data: string) => string): Promise<string> {
         return new Promise((resolve, reject) => {
             this._logger.LogTrace(`executing command: ${command}`);
-            exec(command, (error: ExecException, stdout: string, stderr: string) => {
+            const childProcess = exec(command, (error: ExecException, stdout: string, stderr: string) => {
                 this._logger.LogTrace(`command results: ${command}
 Error: ${error}
 stderr: ${stderr}
@@ -93,6 +93,24 @@ stdout: ${stdout}`);
                     resolve(stdout);
                 }
             });
+
+            function streamHandler(chunk) {
+                const result = interactiveHandler(chunk.toString());
+
+                if (result) {
+                    childProcess.stdin.write(result);
+                }
+            }
+
+            if (interactiveHandler) {
+                childProcess.stdout.on('data', streamHandler);
+                childProcess.stderr.on('data', streamHandler);
+            }
+
+            if (this._logger.IsEnabled(LogLevel.Trace)) {
+                childProcess.stdout.pipe(process.stdout);
+                childProcess.stderr.pipe(process.stderr);
+            }
         });
     }
 };

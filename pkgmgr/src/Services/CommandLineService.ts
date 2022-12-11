@@ -22,6 +22,9 @@ export default class CommandLineService {
         else if (this._arguments.argv.hasOwnProperty('search')) {
             return 'search';
         }
+        else if (this._arguments.argv.hasOwnProperty('uninstall')) {
+            return 'uninstall';
+        }
 
         return null;
     }
