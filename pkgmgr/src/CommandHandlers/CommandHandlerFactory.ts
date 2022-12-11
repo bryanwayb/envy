@@ -1,5 +1,5 @@
 import Container, { Service } from 'typedi';
-import { DI_ICommandHandlerFactory, DI_ICommandHandler_InstallCommand, DI_ICommandHandler_HelpCommand, DI_ICommandHandler_ListCommand, DI_ICommandHandler_SearchCommand, DI_ICommandHandler_UninstallCommand } from '../../consts';
+import { DI_ICommandHandlerFactory, DI_ICommandHandler_InstallCommand, DI_ICommandHandler_HelpCommand, DI_ICommandHandler_ListCommand, DI_ICommandHandler_SearchCommand, DI_ICommandHandler_UninstallCommand, DI_ICommandHandler_UpgradeCommand } from '../../consts';
 import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { ICommandHandlerFactory } from '../Interfaces/ICommandHandlerFactory';
 import CommandLineService from '../Services/CommandLineService';
@@ -12,7 +12,8 @@ export class CommandHandlerFactory implements ICommandHandlerFactory {
         'install': DI_ICommandHandler_InstallCommand,
         'list': DI_ICommandHandler_ListCommand,
         'search': DI_ICommandHandler_SearchCommand,
-        'uninstall': DI_ICommandHandler_UninstallCommand
+        'uninstall': DI_ICommandHandler_UninstallCommand,
+        'upgrade': DI_ICommandHandler_UpgradeCommand
     };
 
     constructor() {

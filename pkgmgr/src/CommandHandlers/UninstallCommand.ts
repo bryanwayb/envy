@@ -5,7 +5,7 @@ import { PackageModel } from '../PackageServices/Models/PackageModel';
 import BaseCommand from './BaseCommand';
 
 @Service(DI_ICommandHandler_UninstallCommand)
-export default class ListCommand extends BaseCommand implements ICommandHandler {
+export default class UninstallCommand extends BaseCommand implements ICommandHandler {
     async Execute(): Promise<number> {
         this._logger.LogTrace(`preparing to uninstall packages`);
 

@@ -25,6 +25,9 @@ export default class CommandLineService {
         else if (this._arguments.argv.hasOwnProperty('uninstall')) {
             return 'uninstall';
         }
+        else if (this._arguments.argv.hasOwnProperty('upgrade')) {
+            return 'upgrade';
+        }
 
         return null;
     }

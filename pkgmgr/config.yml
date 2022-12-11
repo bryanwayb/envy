@@ -2,7 +2,7 @@ packageManagers:
   chocolatey:
     enabled: true
     safeMode: false
-    dryRun: true
+    dryRun: false
     rootCommand: choco
 
     globalSwitches: '--no-progress --nocolor'
