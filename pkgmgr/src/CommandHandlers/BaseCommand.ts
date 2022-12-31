@@ -4,11 +4,13 @@ import CommandLineService from "../Services/CommandLineService";
 import LoggerService from "../Services/LoggerService";
 import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
 import { DI_IPackageServiceFactory } from "../../consts";
+import ConsoleGUI from "../Services/ConsoleGUI";
 
 export default abstract class BaseCommand {
     protected readonly _commandLineService = Container.get(CommandLineService);
     protected readonly _logger = Container.get(LoggerService).ScopeByName(this.constructor.name);
     protected readonly _packageServiceFactory = Container.get<IPackageServiceFactory>(DI_IPackageServiceFactory);
+    protected readonly _consoleGUI = Container.get(ConsoleGUI);
 
     protected GetPassedPackages(): PackageModel[] {
         const results = new Array<PackageModel>();

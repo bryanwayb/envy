@@ -58,7 +58,6 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
             return 1;
         }
 
-        //this._logger.LogTrace(`upgrade packages: ${upgradePackages.map(m => m.toString()).join('\n')}`);
         this._logger.LogTrace(`upgrade packages: ${Object.keys(upgradePackages).map(m => `${m} --> ${upgradePackages[m].toString()}`).join('\n')}`);
         this._logger.LogTrace(`install packages: ${installPackages.map(m => m.toString()).join('\n')}`);
         this._logger.LogTrace(`missing packages: ${missingPackages.map(m => m.toString()).join('\n')}`);

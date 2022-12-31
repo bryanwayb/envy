@@ -3,6 +3,8 @@ import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { DI_ICommandHandler_SearchCommand } from '../../consts';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import BaseCommand from './BaseCommand';
+import { ConsoleSpinnerInstance } from '../Services/ConsoleGUI';
+import { IPackageService } from '../Interfaces/IPackageService';
 
 @Service(DI_ICommandHandler_SearchCommand)
 export default class SearchCommand extends BaseCommand implements ICommandHandler {
@@ -10,29 +12,51 @@ export default class SearchCommand extends BaseCommand implements ICommandHandle
         this._logger.LogTrace(`searching for packages`);
 
         const passedPackages = this.GetPassedPackages();
+
         const packageServices = await this._packageServiceFactory.GetAllInstances();
 
-        const foundPackages = new Array<PackageModel>();
+        const spinners = this._consoleGUI.CreateSpinners();
+        const resultsPromises = new Array<Promise<Array<PackageModel>>>();
 
         for (const i in passedPackages) {
             const passedPackage = passedPackages[i];
 
-            if (!passedPackage.HasManager()) {
-                this._logger.LogTrace(`package ${passedPackage} has no manager supplied, querying all managers`);
-                for (const i in packageServices) {
-                    const packageService = packageServices[i];
-                    const packageServicePackages = await packageService.SearchPackages(passedPackage);
-                    foundPackages.push(...packageServicePackages);
+            const spinnerInstance = spinners.Add(`${[passedPackage]}`);
+
+            resultsPromises.push((async () => {
+                const searchResults = new Array<PackageModel>();
+
+                let servicesToSearch: IPackageService[] = packageServices;
+                if (passedPackage.HasManager()) {
+                    servicesToSearch = [await this._packageServiceFactory.GetInstance(passedPackage.Manager)];
                 }
-            }
-            else {
-                const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager);
-                const packageServicePackages = await packageService.SearchPackages(passedPackage);
-                foundPackages.push(...packageServicePackages);
-            }
+
+                for (const i in servicesToSearch) {
+                    const packageService = packageServices[i];
+
+                    spinnerInstance.Update(`${[passedPackage]}: searching ${packageService.ServiceIdentifier}`);
+                    const packageServiceSearchResults = await packageService.SearchPackages(passedPackage);
+
+                    searchResults.push(...packageServiceSearchResults);
+                }
+
+                const resultText = `${[passedPackage]}: found ${searchResults.length} results`;
+                if (searchResults.length) {
+                    spinnerInstance.Success(resultText);
+                }
+                else {
+                    spinnerInstance.Fail(resultText);
+                }
+
+                return searchResults;
+            })());
         }
 
-        console.log(foundPackages.map(m => m.toString()).join('\n'));
+        let results = (await Promise.all(resultsPromises)).flat();
+
+        results = results.filter((filterPackage, index) => results.findIndex(findIndexPackages => findIndexPackages.toString() === filterPackage.toString()) === index);
+
+        this._consoleGUI.PrintConsoleTable(results);
 
         this._logger.LogTrace(`search finished`);
 
