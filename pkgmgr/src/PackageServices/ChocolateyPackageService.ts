@@ -44,21 +44,30 @@ export default class ChocolateyPackageService implements IPackageService {
     private ParseRawChocolateyPackageList(input: string): PackageModel[] {
         const rawPackages = input.split('\n');
 
+        let shouldParse = false;
+
         const packages = new Array<PackageModel>();
         for (const i in rawPackages) {
-            if (rawPackages[i].indexOf('Chocolatey v') !== -1) {
+            if (rawPackages[i].indexOf('Chocolatey v') !== -1
+                || rawPackages[i].trim() === '') {
+                shouldParse = true;
                 continue;
             }
-            else if (rawPackages[i].indexOf('packages installed.') !== -1) {
-                break;
+            else if (rawPackages[i].indexOf('validations performed.') !== -1
+                || rawPackages[i].indexOf('Validation Warnings:') !== -1) {
+                shouldParse = false;
+                continue;
             }
-            else if (rawPackages[i].indexOf('packages found.') !== -1) {
+            else if (rawPackages[i].indexOf('packages found.') !== -1
+                || rawPackages[i].indexOf('packages installed.') !== -1) {
                 break;
             }
 
-            const parsed = this.ParseRawInstalledPackageString(rawPackages[i]);
-            if (parsed) {
-                packages.push(parsed);
+            if (shouldParse) {
+                const parsed = this.ParseRawInstalledPackageString(rawPackages[i]);
+                if (parsed) {
+                    packages.push(parsed);
+                }
             }
         }
 

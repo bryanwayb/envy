@@ -3,17 +3,17 @@ packages:
 - install: choco
   package: dive
 
-- install: npm
-  package: js-yaml
+#- install: npm
+#  package: js-yaml
 
-- install: winget
-  package: docker
+#- install: winget
+#  package: docker
 
-- uninstall: winget
-  package: docker
+#- uninstall: winget
+#  package: docker
 
-- install: apt
-  package: python3-pip
-  target:
-    type: wsl
-    host: ubuntu
+#- install: apt
+#  package: python3-pip
+#  target:
+#    type: wsl
+#    host: ubuntu

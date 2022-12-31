@@ -9,30 +9,42 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
     async Execute(): Promise<number> {
         this._logger.LogTrace(`preparing to upgrade packages`);
 
-        const upgradePackages = new Array<PackageModel>();
+        const upgradePackages: { [packageVersion: string]: PackageModel } = {};
+        const installPackages = new Array<PackageModel>();
         const missingPackages = new Array<PackageModel>();
         const ignoredPackages = new Array<PackageModel>();
 
         const passedPackages = this.GetPassedPackages();
         if (passedPackages.length > 0) {
-            //for (const i in passedPackages) {
-            //    const passedPackage = passedPackages[i];
+            for (const i in passedPackages) {
+                const passedPackage = passedPackages[i];
 
-            //    await this.EnsurePackageHasManager(passedPackage);
+                // TODO: This throws an error, but we want to collect missing packages, fix this
+                await this.EnsurePackageHasManager(passedPackage);
 
-            //    const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager);
+                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager);
 
-            //    const installedPackage = await packageService.GetInstalledPackage(passedPackage);
+                this._logger.LogTrace(`checking if ${passedPackage} exists in package manager`);
+                const availablePackage = await packageService.GetPackageAvaiableForInstall(passedPackage);
+                if (availablePackage === null) {
+                    this._logger.LogTrace(`${passedPackage} does not exist in package manager`);
+                    missingPackages.push(passedPackage);
+                }
+                else {
+                    const packageWithoutVersion = new PackageModel(passedPackage);
+                    packageWithoutVersion.Version = null;
+                    const installedPackage = await packageService.GetInstalledPackage(packageWithoutVersion);
 
-            //    if (installedPackage) {
-            //        this._logger.LogTrace(`package ${installedPackage} is installed`);
-            //        upgradePackages.push(installedPackage);
-            //    }
-            //    else {
-            //        missingPackages.push(passedPackage);
-            //        this._logger.LogTrace(`package ${passedPackage} is not installed`);
-            //    }
-            //}
+                    if (installedPackage) {
+                        this._logger.LogTrace(`${availablePackage} exists in package manager, upgrading from ${installedPackage} to ${availablePackage}`);
+                        upgradePackages[installedPackage.toString()] = availablePackage;
+                    }
+                    else {
+                        this._logger.LogTrace(`package ${availablePackage} is not installed, will install`);
+                        installPackages.push(availablePackage);
+                    }
+                }
+            }
         }
         else {
             this._logger.LogTrace(`no packages have been passed, cannot upgrade`);
@@ -40,7 +52,9 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
             return 1;
         }
 
-        this._logger.LogTrace(`upgrade packages: ${upgradePackages.map(m => m.toString()).join('\n')}`);
+        //this._logger.LogTrace(`upgrade packages: ${upgradePackages.map(m => m.toString()).join('\n')}`);
+        this._logger.LogTrace(`upgrade packages: ${Object.keys(upgradePackages).map(m => `${m} --> ${upgradePackages[m].toString()}`).join('\n')}`);
+        this._logger.LogTrace(`install packages: ${installPackages.map(m => m.toString()).join('\n')}`);
         this._logger.LogTrace(`missing packages: ${missingPackages.map(m => m.toString()).join('\n')}`);
         this._logger.LogTrace(`ignored packages: ${ignoredPackages.map(m => m.toString()).join('\n')}`);
 
@@ -48,15 +62,22 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
             return 1;
         }
 
-        for (const i in upgradePackages) {
-            //const foundPackage = upgradePackages[i];
+        for (const i in installPackages) {
+            const installPackage = installPackages[i];
+            const packageService = this._packageServiceFactory.GetInstance(installPackage.Manager);
 
-            //const packageService = this._packageServiceFactory.GetInstance(foundPackage.Manager);
-
-            //await packageService.UninstallPackage(foundPackage);
+            await packageService.InstallPackage(installPackage);
         }
 
-        console.log(upgradePackages.map(m => m.toString()).join('\n'));
+        for (const i in upgradePackages) {
+            const upgradePackage = upgradePackages[i];
+            const packageService = this._packageServiceFactory.GetInstance(upgradePackage.Manager);
+
+            //await packageService.UpgradePackage(foundPackage);
+        }
+
+        console.log('installed packages', installPackages.map(m => m.toString()).join('\n'));
+        console.log('upgraded packages', Object.keys(upgradePackages).map(m => `${m} --> ${upgradePackages[m].toString()}`).join('\n'));
 
         this._logger.LogTrace(`upgrade finished`);
 

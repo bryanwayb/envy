@@ -1,6 +1,14 @@
 const versionStringRegex = new RegExp('^((.*?):)?(.*?)(@(.*))?$');
 
 export class PackageModel {
+    constructor(packageModel: PackageModel= null) {
+        if (packageModel !== null) {
+            this.Manager = packageModel.Manager;
+            this.Name = packageModel.Name;
+            this.Version = packageModel.Version;
+        }
+    }
+
     public Manager: string;
 
     public Name: string;
