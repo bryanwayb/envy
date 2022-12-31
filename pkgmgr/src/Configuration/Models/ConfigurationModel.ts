@@ -14,6 +14,7 @@ export class ChocolateyConfigurationModel {
     public searchCommand: string;
     public installCommand: string;
     public uninstallCommand: string;
+    public upgradeCommand: string;
     public isInstalledCommand: string;
     public getExistingInstalledVersionCommand: string;
     public isPackageAvaiableForInstallCommand: string;

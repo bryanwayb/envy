@@ -188,6 +188,16 @@ export default class ChocolateyPackageService implements IPackageService {
         });
     }
 
+    async UpgradePackage(packageModel: PackageModel): Promise<void> {
+        const config = await this.GetConfiguration();
+
+        // TODO: Handle response codes
+
+        await this.ExecuteCommand(config.upgradeCommand, {
+            package: packageModel
+        });
+    }
+
     async IsServiceAvailable(): Promise<boolean> {
         const config = await this.GetConfiguration();
         return config.enabled

@@ -36,8 +36,14 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
                     const installedPackage = await packageService.GetInstalledPackage(packageWithoutVersion);
 
                     if (installedPackage) {
-                        this._logger.LogTrace(`${availablePackage} exists in package manager, upgrading from ${installedPackage} to ${availablePackage}`);
-                        upgradePackages[installedPackage.toString()] = availablePackage;
+                        if (installedPackage.Version === availablePackage.Version) {
+                            this._logger.LogTrace(`${installedPackage} is already at the requested version, ignoring`);
+                            ignoredPackages.push(installedPackage);
+                        }
+                        else {
+                            this._logger.LogTrace(`${availablePackage} exists in package manager, upgrading from ${installedPackage} to ${availablePackage}`);
+                            upgradePackages[installedPackage.toString()] = availablePackage;
+                        }
                     }
                     else {
                         this._logger.LogTrace(`package ${availablePackage} is not installed, will install`);
@@ -73,7 +79,7 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
             const upgradePackage = upgradePackages[i];
             const packageService = this._packageServiceFactory.GetInstance(upgradePackage.Manager);
 
-            //await packageService.UpgradePackage(foundPackage);
+            await packageService.UpgradePackage(upgradePackage);
         }
 
         console.log('installed packages', installPackages.map(m => m.toString()).join('\n'));

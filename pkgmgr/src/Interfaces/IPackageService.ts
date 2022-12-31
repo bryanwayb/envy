@@ -15,4 +15,5 @@ export interface IPackageService {
 
     InstallPackage(packageModel: PackageModel): Promise<void>;
     UninstallPackage(packageModel: PackageModel): Promise<void>;
+    UpgradePackage(packageModel: PackageModel): Promise<void>;
 };
