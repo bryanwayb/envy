@@ -54,6 +54,7 @@
     <Folder Include="src\PackageServices\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="buildPreloader.ts" />
     <TypeScriptCompile Include="consts.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\ApplyCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\BaseCommand.ts" />

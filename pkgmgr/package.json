@@ -6,10 +6,14 @@
   "author": {
     "name": ""
   },
+  "bin": {
+    "pkgmgr": "app.js"
+  },
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "dist": "tsc --outDir ./dist/build && node ./dist/build/prepareBuild.js && pkg ./dist/build/app.js -c ./package.json"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.5",
@@ -23,9 +27,17 @@
     "i": "^0.3.7",
     "js-yaml": "^4.1.0",
     "npm": "^9.1.3",
+    "pkg": "^5.8.0",
     "reflect-metadata": "^0.1.13",
     "spinnies": "^0.5.1",
     "typedi": "^0.10.0",
     "yargs": "^17.6.2"
+  },
+  "pkg": {
+    "assets": [
+      "**/config.yml"
+    ],
+    "targets": [ "node18-win-x64" ],
+    "outputPath": "dist/executables"
   }
 }

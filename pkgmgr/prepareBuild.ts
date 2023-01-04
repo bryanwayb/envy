@@ -1,5 +1,6 @@
-import { readdirSync, statSync } from 'fs';
+import { copyFileSync, readdirSync, statSync } from 'fs';
 import { join as joinPath, relative as relativePath } from 'path';
+import { writeFileSync } from 'fs';
 
 function matchesAnyRegExp(input: string, expressions: RegExp[]) {
     for (const i in expressions) {
@@ -23,24 +24,28 @@ function buildDirectoryListing(path: string, expressions: RegExp[]): Array<strin
             ret.push(...subdirectories);
         }
         else if (matchesAnyRegExp(entryRelativePath, expressions)) {
-            ret.push(`${relativePath(__dirname, entryRelativePath) }`);
+            ret.push(`./${relativePath(__dirname, entryRelativePath)}`);
         }
     }
 
     return ret;
 }
 
-function load(path: string, expressions: RegExp[]): void {
+function writeRequires(path: string, expressions: RegExp[]): void {
     const files = buildDirectoryListing(path, expressions);
+    const windowsSepCharacterRegex = /\\/gm;
+    let src = '';
     for (const i in files) {
         try {
-            require(files[i]);
+            src += 'require(\'' + files[i].replace(windowsSepCharacterRegex, '/') + '\');\n';
         }
         catch (ex) {
             console.error(`Error while loading ${files[i]}`);
             throw ex;
         }
     }
+    writeFileSync(joinPath(__dirname, './preloader.js'), src);
 }
 
-load('./src', [ /^.*?\.js$/ ]);
+writeRequires(joinPath(__dirname, './src'), [/^.*?\.js$/]);
+copyFileSync(joinPath(process.cwd(), './config.yml'), joinPath(__dirname, './config.yml'));

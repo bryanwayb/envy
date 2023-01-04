@@ -2,6 +2,8 @@ import 'reflect-metadata';
 
 require('./preloader');
 
+require('./src/CommandHandlers/CommandHandlerFactory');
+
 import Container from 'typedi';
 import { DI_ICommandHandlerFactory } from './consts';
 import { ICommandHandlerFactory } from './src/Interfaces/ICommandHandlerFactory';
