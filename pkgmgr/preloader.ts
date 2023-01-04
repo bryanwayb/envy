@@ -23,7 +23,7 @@ function buildDirectoryListing(path: string, expressions: RegExp[]): Array<strin
             ret.push(...subdirectories);
         }
         else if (matchesAnyRegExp(entryRelativePath, expressions)) {
-            ret.push(`${relativePath(__dirname, entryRelativePath) }`);
+            ret.push(`./${relativePath(__dirname, entryRelativePath) }`);
         }
     }
 
