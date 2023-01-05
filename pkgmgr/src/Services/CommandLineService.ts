@@ -28,6 +28,9 @@ export default class CommandLineService {
         else if (this._arguments.argv.hasOwnProperty('upgrade')) {
             return 'upgrade';
         }
+        else if (this._arguments.argv.hasOwnProperty('apply')) {
+            return 'apply';
+        }
 
         return null;
     }

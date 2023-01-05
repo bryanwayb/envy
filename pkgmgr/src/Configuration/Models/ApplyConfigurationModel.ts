@@ -1,5 +1,5 @@
 import { PackageEntryModel } from "./PackageEntryModel";
 
-export class ConfigurationModel {
+export class ApplyConfigurationModel {
     public packages: Array<PackageEntryModel>;
 }

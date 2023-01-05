@@ -5,6 +5,7 @@ export const DI_ICommandHandler_ListCommand = 'ICommandHandler<ListCommand>';
 export const DI_ICommandHandler_SearchCommand = 'ICommandHandler<SearchCommand>';
 export const DI_ICommandHandler_UninstallCommand = 'ICommandHandler<UninstallCommand>';
 export const DI_ICommandHandler_UpgradeCommand = 'ICommandHandler<UpgradeCommand>';
+export const DI_ICommandHandler_ApplyCommand = 'ICommandHandler<ApplyCommand>';
 
 export const DI_IConfiguration_Configuration = 'IConfiguration<Configuration>';
 

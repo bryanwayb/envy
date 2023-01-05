@@ -38,6 +38,7 @@
     <Content Include="src\CommandHandlers\CommandHandlerFactory.ts" />
     <Content Include="src\Interfaces\ICommandHandler.ts" />
     <Content Include="package.json" />
+    <Content Include="src\Interfaces\IOperation.ts" />
     <Content Include="src\PackageServices\ChocolateyPackageService.ts" />
     <Content Include="src\Services\YamlSerializationService.ts" />
     <Content Include="tsconfig.json" />
@@ -49,12 +50,13 @@
     <Folder Include="src\Interfaces\" />
     <Folder Include="src\" />
     <Folder Include="src\Configuration\" />
+    <Folder Include="src\Operations\" />
     <Folder Include="src\PackageServices\Models\" />
     <Folder Include="src\Services\" />
     <Folder Include="src\PackageServices\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="buildPreloader.ts" />
+    <TypeScriptCompile Include="prepareBuild.ts" />
     <TypeScriptCompile Include="consts.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\ApplyCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\BaseCommand.ts" />
@@ -73,6 +75,8 @@
     <TypeScriptCompile Include="src\Interfaces\ICommandHandlerFactory.ts" />
     <TypeScriptCompile Include="preloader.ts" />
     <TypeScriptCompile Include="src\Interfaces\IPackageServiceFactory.ts" />
+    <TypeScriptCompile Include="src\Operations\InstallOperation.ts" />
+    <TypeScriptCompile Include="src\Operations\UninstallOperation.ts" />
     <TypeScriptCompile Include="src\PackageServices\Models\PackageModel.ts" />
     <TypeScriptCompile Include="src\PackageServices\PackageServiceFactory.ts" />
     <TypeScriptCompile Include="src\Services\CommandLineService.ts" />
