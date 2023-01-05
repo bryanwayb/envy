@@ -35,6 +35,7 @@
     <Content Include="config.yml" />
     <Content Include="examples\example_apply.yml" />
     <Content Include="examples\example_config.yml" />
+    <Content Include="src\Classes\EventEmitter.ts" />
     <Content Include="src\CommandHandlers\CommandHandlerFactory.ts" />
     <Content Include="src\Interfaces\ICommandHandler.ts" />
     <Content Include="package.json" />
@@ -50,6 +51,7 @@
     <Folder Include="src\Interfaces\" />
     <Folder Include="src\" />
     <Folder Include="src\Configuration\" />
+    <Folder Include="src\Classes\" />
     <Folder Include="src\Operations\" />
     <Folder Include="src\PackageServices\Models\" />
     <Folder Include="src\Services\" />
@@ -75,6 +77,8 @@
     <TypeScriptCompile Include="src\Interfaces\ICommandHandlerFactory.ts" />
     <TypeScriptCompile Include="preloader.ts" />
     <TypeScriptCompile Include="src\Interfaces\IPackageServiceFactory.ts" />
+    <TypeScriptCompile Include="src\Operations\BaseOperation.ts" />
+    <TypeScriptCompile Include="src\Operations\UpgradeOperation.ts" />
     <TypeScriptCompile Include="src\Operations\InstallOperation.ts" />
     <TypeScriptCompile Include="src\Operations\UninstallOperation.ts" />
     <TypeScriptCompile Include="src\PackageServices\Models\PackageModel.ts" />

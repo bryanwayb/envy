@@ -1,12 +1,10 @@
 import { Service } from 'typedi';
 import { IOperation } from '../Interfaces/IOperation';
-import { PackageModel } from '../PackageServices/Models/PackageModel';
+import BaseOperation from './BaseOperation';
 
 @Service()
-export default class InstallOperation implements IOperation {
-    public readonly PackageModel: PackageModel;
-
-    constructor(packageModel: PackageModel) {
-        this.PackageModel = packageModel;
+export default class InstallOperation extends BaseOperation implements IOperation {
+    Execute(): Promise<void> {
+        throw new Error('Method not implemented.');
     }
 }

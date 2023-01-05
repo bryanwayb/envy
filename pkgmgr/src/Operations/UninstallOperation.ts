@@ -1,12 +1,8 @@
 import { Service } from 'typedi';
 import { IOperation } from '../Interfaces/IOperation';
-import { PackageModel } from '../PackageServices/Models/PackageModel';
+import BaseOperation from './BaseOperation';
 
 @Service()
-export default class UninstallOperation implements IOperation {
-    public readonly PackageModel: PackageModel;
-
-    constructor(packageModel: PackageModel) {
-        this.PackageModel = packageModel;
-    }
+export default class UninstallOperation extends BaseOperation implements IOperation {
+    
 }

@@ -1,7 +1,6 @@
 packages:
 
-- install: choco
-  package: dive
+- install: choco:dive
 
 #- install: npm
 #  package: js-yaml

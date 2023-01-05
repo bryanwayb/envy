@@ -1,5 +1,6 @@
 node_modules/
 .node_modules/
+bin/
 built/*
 dist/
 tests/cases/rwc/*

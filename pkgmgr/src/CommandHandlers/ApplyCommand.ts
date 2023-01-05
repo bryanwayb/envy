@@ -6,9 +6,9 @@ import { resolve as resolvePath } from 'path';
 import { ApplyConfigurationModel } from '../Configuration/Models/ApplyConfigurationModel';
 import YamlSerializationService from '../Services/YamlSerializationService';
 import { IOperation } from '../Interfaces/IOperation';
-import InstallOperation from '../Operations/InstallOperation';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import UninstallOperation from '../Operations/UninstallOperation';
+import UpgradeOperation from '../Operations/UpgradeOperation';
 
 @Service(DI_ICommandHandler_ApplyCommand)
 export default class ApplyCommand extends BaseCommand implements ICommandHandler {
@@ -61,7 +61,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
 
                 if (applyPackage.install) {
                     const installPackageModel = PackageModel.Parse(applyPackage.install);
-                    const installOperation = new InstallOperation(installPackageModel);
+                    const installOperation = new UpgradeOperation(installPackageModel);
                     operations.push(installOperation);
                 }
                 else if (applyPackage.uninstall) {
@@ -78,6 +78,17 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
     async Execute(): Promise<number> {
         const applyConfigurations = await this.LoadApplyConfigurations();
         const operations = this.GetOperationsFromApplyConfig(applyConfigurations);
+
+        for (const i in operations) {
+            const operation = operations[i];
+            this._logger.LogTrace(`apply ${operation.PackageModel}`);
+
+            operation.OnEvent('update', data => {
+                console.log(`${operation.PackageModel}: ${data}`);
+            });
+
+            await operation.Execute();
+        }
 
         return 0;
     }
