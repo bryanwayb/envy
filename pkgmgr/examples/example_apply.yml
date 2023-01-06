@@ -1,5 +1,6 @@
 packages:
 
+- install: choco:vscode@1.73.0
 - install: choco:dive
 
 #- install: npm

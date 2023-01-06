@@ -87,6 +87,10 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
                 console.log(`${operation.PackageModel}: ${data}`);
             });
 
+            operation.OnEvent('success', data => {
+                console.log(`${operation.PackageModel}: ${data}`);
+            });
+
             await operation.Execute();
         }
 
