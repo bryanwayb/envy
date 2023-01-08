@@ -1,0 +1,61 @@
+# A default "root" target is implied which allows for simple configs if desired
+# This is similar to doing the following:
+#name: 'root'
+# The default section name cannot be changed
+
+# Defines a list of targets that will resolve before attempting to run operations
+# Apply will only attempt to run targets that it can resolve on the current machine
+# This allows for a single configuration to be shared across multiple machines
+targets:
+  # Below will only run when running on a Windows machine
+  - os: windows # os is required when specifying a target
+
+    # By default type = 'local', this is similar to the following
+    # type: local
+
+    # -- WARNING -- Contexts are a planned experimental feature and may not be fully supported
+
+    # Operations can be scopped to a context, by default the context is set to "system", like so:
+    # context: system
+    # Contexts can be one of the following: system, user, directory (can also just be a path, like below)
+    # context: ./context/path
+
+    # System will apply to the entire system and will typically need to be ran as admin/root
+    # User should only need to modify files that the current user is able to modify, but only applies to the current user
+    # Directory will only perform the operations in either the current directory (if set as "directory") or the specific path
+    #   When using directory with a relative path a "." needs to be supplied first
+    operations:
+      - install: choco:git
+
+  # Below will only run when running on a linux machine with an ubuntu or debian distributions
+  - os: linux
+    distributions: # TODO: Should this be a more generic name to allow for Windows editions as well?
+      - ubuntu
+      - debian
+    operations:
+      - install: apt:git
+
+# It's also possible to specify a list of operations without targets
+# This allows for a simple configuration but nothing will be performed if the required package managers doesn't exist
+# This is not recommended when an apply config is being shared across machines and operation systems
+#operations:
+#- install: choco:git
+
+# Defines a list of sections that can be used to do command line targeting
+# Sections are also useful for organizational grouping
+sections:
+  # "ide" section, installed when no specific target is passed
+  # can be targeted directly by apply -f ./apply ide
+  - name: ide
+    targets:
+      - os: windows
+        operations:
+          - install: "choco:visualstudio2022enterprise"
+          - install: "choco:visualstudio2022-workload-netweb"
+        sections:
+          # "extensions" subsection, also will be installed when no specific target is given
+          # can be targeted directly by apply -f ./apply ide.extensions
+          - name: extensions
+            # target will inherit parent section target when not provided
+            operations:
+              - install: "choco:codemaid"

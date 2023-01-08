@@ -33,6 +33,7 @@
   <ItemGroup>
     <None Include="app.ts" />
     <Content Include="config.yml" />
+    <Content Include="examples\apply.yml" />
     <Content Include="examples\example_apply.yml" />
     <Content Include="examples\example_config.yml" />
     <Content Include="src\Classes\EventEmitter.ts" />
