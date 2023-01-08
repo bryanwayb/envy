@@ -38,11 +38,29 @@ export default class CommandLineService {
     GetOption(...names: string[]): string {
         for (const i in names) {
             const value = this._arguments.argv[names[i]];
-            if (value) {
+
+            if (Array.isArray(value)) {
+                return value[0];
+            }
+            else if (value) {
                 return value;
             }
         }
         return null;
+    }
+
+    GetOptionList(...names: string[]): string[] {
+        for (const i in names) {
+            const value = this._arguments.argv[names[i]] as string;
+
+            if (Array.isArray(value)) {
+                return value;
+            }
+            else if (value) {
+                return [value];
+            }
+        }
+        return [];
     }
 
     HasOption(...names: string[]): boolean {

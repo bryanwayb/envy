@@ -34,13 +34,13 @@ export default class ConfigurationService implements IConfiguration {
 
             this._logger.LogTrace(`using config file path "${defaultConfigurationFilePath}"`);
 
-            const defaultConfiguration = await this._yamlSerializationService.LoadYamlFromFile<ConfigurationModel>(defaultConfigurationFilePath);
+            const defaultConfiguration = await this._yamlSerializationService.LoadYamlFromFile(ConfigurationModel, defaultConfigurationFilePath);
 
             const configurationFilePath = this._commandLineService.GetOption("config");
             if (configurationFilePath
                 && configurationFilePath.trim() !== '') {
                 this._logger.LogTrace(`loading additional config override file, "${configurationFilePath}"`);
-                const suppliedConfiguration = await this._yamlSerializationService.LoadYamlFromFile<ConfigurationModel>(configurationFilePath);
+                const suppliedConfiguration = await this._yamlSerializationService.LoadYamlFromFile(ConfigurationModel, configurationFilePath);
                 this._configurationModel = this.MergeObjects(defaultConfiguration, suppliedConfiguration);
             }
             else {

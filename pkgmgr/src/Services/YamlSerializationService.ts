@@ -6,16 +6,18 @@ import { resolve } from 'path';
 
 @Service()
 export default class YamlSerializationService {
-    LoadYaml<T>(input: string): T {
-        return load(input) as T;
+    LoadYaml<T>(type: { new(data: any): T; }, input: string): T {
+        const data = load(input);
+        const instance = new type(data);
+        return instance;
     }
 
-    async LoadYamlFromFile<T>(file: string): Promise<T> {
+    async LoadYamlFromFile<T>(type: { new(data: any): T; }, file: string): Promise<T> {
         const currentDirectory = getCurrentWorkingDirectory();
         const resolvedFilePath = resolve(currentDirectory, file);
 
         const dataBuffer = await readFile(resolvedFilePath, 'utf8');
         const data = dataBuffer.toString();
-        return this.LoadYaml(data);
+        return this.LoadYaml<T>(type, data);
     }
 };

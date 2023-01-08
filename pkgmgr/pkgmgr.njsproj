@@ -70,8 +70,7 @@
     <TypeScriptCompile Include="src\CommandHandlers\UninstallCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\UpgradeCommand.ts" />
     <TypeScriptCompile Include="src\Configuration\ConfigurationService.ts" />
-    <TypeScriptCompile Include="src\Configuration\Models\ApplyConfigurationModel.ts" />
-    <TypeScriptCompile Include="src\Configuration\Models\PackageEntryModel.ts" />
+    <TypeScriptCompile Include="src\Configuration\Models\ApplyModels.ts" />
     <TypeScriptCompile Include="src\Configuration\Models\ConfigurationModel.ts" />
     <TypeScriptCompile Include="src\Interfaces\IConfiguration.ts" />
     <TypeScriptCompile Include="src\Interfaces\IPackageService.ts" />
