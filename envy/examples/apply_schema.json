@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "An Envy apply configuration",
+  "properties": {
+    "$ref": "#/definitions/section"
+  },
+  "definitions": {
+    "section": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/sectionAndTargetBase"
+        },
+        {
+          "name": {
+            "type": "string",
+            "description": "The name of the current section",
+            "examples": [ "my-section", "user-applications" ]
+          },
+          "targets": { "$ref": "#/definitions/target" }
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "description": "A target is a conditional match to which a list of operations will apply against. A target's operations will only run if the specific conditions are met.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/sectionAndTargetBase"
+        },
+        {
+          "os": {
+            "type": "string",
+            "description": "The operating system the operations should target",
+            "examples": [ "windows", "linux" ]
+          },
+          "distributions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "When targeting a Linux machine, a list of distributions to match to.",
+            "examples": [ "ubuntu", "debian" ]
+          }
+        }
+      ]
+    },
+    "sectionAndTargetBase": {
+      "type": "object",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "description": "A list of operations.",
+          "items": {
+            "$ref": "#/definitions/operation"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "description": "A list of sections.",
+          "items": {
+            "$ref": "#/definitions/section"
+          }
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "description": "An instruction containing what opeartion to perform.",
+      "properties": {
+        "install": {
+          "type": "string",
+          "description": "An install operation.",
+          "examples": [ "apt:git", "choco:git" ]
+        },
+        "uninstall": {
+          "type": "string",
+          "description": "An uninstall operation.",
+          "examples": [ "apt:git", "choco:git" ]
+        }
+      }
+    }
+  },
+  "title": "Envy Apply Configuration",
+  "type": "object"
+}

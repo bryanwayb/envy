@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./apply_schema.json
 # A default "root" target is implied which allows for simple configs if desired
 # This is similar to doing the following:
 #name: 'root'
@@ -40,6 +41,7 @@ targets:
 # This is not recommended when an apply config is being shared across machines and operation systems
 #operations:
 #- install: choco:git
+test: !import testing
 
 # Defines a list of sections that can be used to do command line targeting
 # Sections are also useful for organizational grouping

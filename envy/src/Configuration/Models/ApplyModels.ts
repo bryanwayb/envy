@@ -12,7 +12,7 @@ export class ApplyOperationModel {
     }
 
     public HasUninstall(): boolean {
-        return this.install && this.install.trim() !== '';
+        return this.uninstall && this.uninstall.trim() !== '';
     }
 
     public Validate(): string[] {
@@ -30,11 +30,11 @@ export class ApplyOperationModel {
     }
 }
 
-export class ApplyTargetModel {
-    constructor(data: any) {
-        this.os = data.os;
-        this.distributions = data.distributions;
+abstract class SectionAndTargetBase {
+    public operations: ApplyOperationModel[];
+    public sections: ApplySectionModel[];
 
+    constructor(data: any) {
         if (data.operations) {
             this.operations = [];
             for (const i in data.operations) {
@@ -60,17 +60,8 @@ export class ApplyTargetModel {
         }
     }
 
-    public os: string;
-    public distributions: string[];
-    public operations: ApplyOperationModel[];
-    public sections: ApplySectionModel[];
-
     public Validate(): string[] {
         const validationErrors: string[] = [];
-
-        if (!this.operations || this.operations.length === 0) {
-            validationErrors.push('target is missing operations');
-        }
 
         if (this.operations) {
             for (const i in this.operations) {
@@ -90,8 +81,36 @@ export class ApplyTargetModel {
     }
 }
 
-export class ApplySectionModel {
+export class ApplyTargetModel extends SectionAndTargetBase {
     constructor(data: any) {
+        super(data);
+
+        this.os = data.os;
+        this.distributions = data.distributions;
+    }
+
+    public os: string;
+    public distributions: string[];
+
+    public Validate(): string[] {
+        const validationErrors: string[] = [];
+
+        // TODO: Perform distro and OS setting validation
+
+        if (!this.operations || this.operations.length === 0) {
+            validationErrors.push('target is missing operations');
+        }
+
+        validationErrors.push(...super.Validate());
+
+        return validationErrors;
+    }
+}
+
+export class ApplySectionModel extends SectionAndTargetBase {
+    constructor(data: any) {
+        super(data);
+
         this.name = data.name;
         if (data.targets) {
             this.targets = [];
@@ -104,23 +123,10 @@ export class ApplySectionModel {
                 }
             }
         }
-
-        if (data.sections) {
-            this.sections = [];
-            for (const i in data.sections) {
-                const section = data.sections[i];
-
-                if (section) {
-                    const entry = new ApplySectionModel(section);
-                    this.sections.push(entry);
-                }
-            }
-        }
     }
 
     public name: string;
     public targets: ApplyTargetModel[];
-    public sections: ApplySectionModel[];
 
     public Validate(): string[] {
         const validationErrors: string[] = [];
@@ -132,13 +138,16 @@ export class ApplySectionModel {
             }
         }
 
-        if (this.sections) {
-            for (const i in this.sections) {
-                const section = this.sections[i];
-                validationErrors.push(...section.Validate());
-            }
-        }
+        validationErrors.push(...super.Validate());
 
         return validationErrors;
+    }
+}
+
+export class ApplyRootModel extends ApplySectionModel {
+    constructor(data: any) {
+        super(data);
+
+        this.name = 'root';
     }
 }

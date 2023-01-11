@@ -3,7 +3,7 @@ import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { DI_ICommandHandler_ApplyCommand } from '../../consts';
 import BaseCommand from './BaseCommand';
 import { join as joinPath, resolve as resolvePath } from 'path';
-import { ApplySectionModel } from '../Configuration/Models/ApplyModels';
+import { ApplyRootModel, ApplySectionModel } from '../Configuration/Models/ApplyModels';
 import YamlSerializationService from '../Services/YamlSerializationService';
 import { IOperation } from '../Interfaces/IOperation';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
@@ -71,19 +71,19 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return [configPath];
     }
 
-    async LoadApplyConfigurations(): Promise<ApplySectionModel[]> {
+    async LoadApplyConfigurations(): Promise<ApplyRootModel[]> {
         this._logger.LogTrace(`loading apply configs`);
 
         const applyConfigPaths = await this.GetApplyConfigPaths();
         const applyTargetNames = this.GetApplyTargetNames();
 
-        const applyConfigs: ApplySectionModel[] = [];
+        const applyConfigs: ApplyRootModel[] = [];
 
         for (const i in applyConfigPaths) {
             const applyConfigPath = applyConfigPaths[i];
             this._logger.LogTrace(`loading apply config: ${applyConfigPath}`);
 
-            const applyConfig = await this._yamlSerializationService.LoadYamlFromFile(ApplySectionModel, applyConfigPath);
+            const applyConfig = await this._yamlSerializationService.LoadYamlFromFile(ApplyRootModel, applyConfigPath);
             this._logger.LogTrace(`config file loaded as: ${this._logger.Serialize(applyConfig)}`);
 
             applyConfigs.push(applyConfig);
@@ -103,7 +103,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return applyConfigs;
     }
 
-    GetOperationsFromApplyConfig(applyConfigurations: ApplySectionModel[]): IOperation[] {
+    GetOperationsFromApplyConfig(applyConfigurations: ApplyRootModel[]): IOperation[] {
         const operations: IOperation[] = [];
 
         //for (const i in applyConfigurations) {

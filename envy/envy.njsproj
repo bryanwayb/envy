@@ -34,9 +34,8 @@
   <ItemGroup>
     <None Include="app.ts" />
     <Content Include="config.yml" />
-    <Content Include="examples\apply.yml" />
-    <Content Include="examples\example_apply.yml" />
-    <Content Include="examples\example_config.yml" />
+    <Content Include="examples\full_apply.yml" />
+    <Content Include="examples\simple_apply.yml" />
     <Content Include="src\Classes\EventEmitter.ts" />
     <Content Include="src\CommandHandlers\CommandHandlerFactory.ts" />
     <Content Include="src\Interfaces\ICommandHandler.ts" />
