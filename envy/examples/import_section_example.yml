@@ -1,0 +1,5 @@
+name: ide
+targets:
+  - os: linux
+    operations:
+      - install: "apt:code"
