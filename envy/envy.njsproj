@@ -34,6 +34,8 @@
   <ItemGroup>
     <None Include="app.ts" />
     <Content Include="config.yml" />
+    <Content Include="examples\apply_schema.json" />
+    <Content Include="examples\import_section_example.yml" />
     <Content Include="examples\full_apply.yml" />
     <Content Include="examples\simple_apply.yml" />
     <Content Include="src\Classes\EventEmitter.ts" />
