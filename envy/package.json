@@ -1,13 +1,13 @@
 {
-  "name": "pkgmgr",
+  "name": "envy",
   "version": "0.0.0",
-  "description": "pkgmgr",
+  "description": "envy",
   "main": "app.js",
   "author": {
     "name": ""
   },
   "bin": {
-    "pkgmgr": "app.js"
+    "envy": "app.js"
   },
   "scripts": {
     "build": "tsc --build",
