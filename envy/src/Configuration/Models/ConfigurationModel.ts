@@ -17,7 +17,11 @@ export class PackageManagersConfigurationModel {
 export class ChocolateyConfigurationModel {
     constructor(data: any) {
         this.enabled = data.enabled;
+        this.safeMode = data.safeMode;
+        this.dryRun = data.dryRun;
         this.rootCommand = data.rootCommand;
+        this.globalSwitches = data.globalSwitches;
+        this.safeModeSearchSwitch = data.safeModeSearchSwitch;
         this.filterInstalledCommand = data.filterInstalledCommand;
         this.getInstalledPackageCommand = data.getInstalledPackageCommand;
         this.searchCommand = data.searchCommand;
@@ -30,7 +34,11 @@ export class ChocolateyConfigurationModel {
     }
 
     public enabled: boolean;
+    public safeMode: boolean;
+    public dryRun: boolean;
     public rootCommand: string;
+    public globalSwitches: string;
+    public safeModeSearchSwitch: string;
     public filterInstalledCommand: string;
     public getInstalledPackageCommand: string;
     public searchCommand: string;
