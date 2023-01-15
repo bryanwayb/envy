@@ -5,7 +5,7 @@ import { join } from 'path';
 import Container, { Service } from 'typedi';
 import LoggerService, { LogLevel } from './LoggerService';
 
-export enum OperatingSystem {
+export enum EnumOperatingSystem {
     Windows,
     Linux
 };
@@ -14,19 +14,24 @@ export enum OperatingSystem {
 export default class ProcessService {
     private readonly _logger = Container.get(LoggerService).ScopeByType(ProcessService);
 
-    GetOS(): OperatingSystem {
+    GetOS(): EnumOperatingSystem {
         switch (platform().toLowerCase()) {
             case 'win32':
-                return OperatingSystem.Windows
+                return EnumOperatingSystem.Windows
             default:
-                return OperatingSystem.Linux;
+                return EnumOperatingSystem.Linux;
         }
+    }
+
+    GetDistribution(): string {
+        // TODO: Get OS distro
+        return '';
     }
 
     async IsAdmin(): Promise<boolean> {
         this._logger.LogTrace('checking if running as admin');
         switch (this.GetOS()) {
-            case OperatingSystem.Windows:
+            case EnumOperatingSystem.Windows:
                 try {
                     await this.Execute('net session');
                     this._logger.LogTrace('process running as admin');
@@ -47,7 +52,7 @@ export default class ProcessService {
         let paths = null;
         let pathExtensions = null;
 
-        if (os === OperatingSystem.Windows) {
+        if (os === EnumOperatingSystem.Windows) {
             paths = process.env.PATH.split(';');
             pathExtensions = (process.env.PATHEXT || '').split(';');
         }

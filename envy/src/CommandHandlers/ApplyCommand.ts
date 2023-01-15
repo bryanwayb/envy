@@ -2,14 +2,15 @@ import Container, { Service } from 'typedi';
 import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { DI_ICommandHandler_ApplyCommand } from '../../consts';
 import BaseCommand from './BaseCommand';
-import { join as joinPath, resolve as resolvePath } from 'path';
-import { ApplyRootModel, ApplySectionModel } from '../Configuration/Models/ApplyModels';
+import { join as joinPath } from 'path';
+import { ApplyRootModel, ApplySectionModel, ApplyTargetModel, ApplyOperationModel } from '../Configuration/Models/ApplyModels';
 import YamlSerializationService from '../Services/YamlSerializationService';
 import { IOperation } from '../Interfaces/IOperation';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import UninstallOperation from '../Operations/UninstallOperation';
 import UpgradeOperation from '../Operations/UpgradeOperation';
 import { stat } from 'fs/promises';
+import ProcessService from '../Services/ProcessService';
 
 const DEFAULT_CONFIG_PATHS: string[] = [
     'nv.yml'
@@ -18,6 +19,7 @@ const DEFAULT_CONFIG_PATHS: string[] = [
 @Service(DI_ICommandHandler_ApplyCommand)
 export default class ApplyCommand extends BaseCommand implements ICommandHandler {
     private readonly _yamlSerializationService = Container.get(YamlSerializationService);
+    private readonly _processService = Container.get(ProcessService);
 
     GetApplyTargetNames(): string[] {
         const targetNames: string[] = [];
@@ -89,7 +91,6 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             applyConfigs.push(applyConfig);
         }
 
-        // TODO: Perform configuration validations
         const validationErrors: string[] = [];
         for (const i in applyConfigs) {
             const applyConfig = applyConfigs[i];
@@ -103,27 +104,86 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return applyConfigs;
     }
 
+    ConvertOperations(applyOperations: ApplyOperationModel[]): IOperation[] {
+        const operations: IOperation[] = [];
+
+        for (const o in applyOperations) {
+            const applyPackage = applyOperations[o];
+
+            if (applyPackage.install) {
+                const installPackageModel = PackageModel.Parse(applyPackage.install);
+                const installOperation = new UpgradeOperation(installPackageModel);
+                operations.push(installOperation);
+            }
+            else if (applyPackage.uninstall) {
+                const uninstallPackageModel = PackageModel.Parse(applyPackage.uninstall);
+                const uninstallOperation = new UninstallOperation(uninstallPackageModel);
+                operations.push(uninstallOperation);
+            }
+        }
+
+        return operations;
+    }
+
+    GetOperationsFromApplyTarget(target: ApplyTargetModel): IOperation[] {
+        const operations: IOperation[] = [];
+
+        if (target.CanTargetOS(this._processService.GetOS())
+            && target.CanTargetDistro(this._processService.GetDistribution())) {
+            if (target.operations) {
+                const targetOperations = this.ConvertOperations(target.operations);
+                operations.push(...targetOperations);
+            }
+
+            if (target.sections) {
+                for (const i in target.sections) {
+                    const section = target.sections[i];
+                    const sectionOperations = this.GetOperationsFromApplySection(section);
+                    operations.push(...sectionOperations);
+                }
+            }
+        }
+
+        return operations;
+    }
+
+    GetOperationsFromApplySection(section: ApplySectionModel): IOperation[] {
+        const operations: IOperation[] = [];
+
+        if (section.operations) {
+            const sectionOperations = this.ConvertOperations(section.operations);
+            operations.push(...sectionOperations);
+        }
+
+        if (section.targets) {
+            for (const i in section.targets) {
+                const target = section.targets[i];
+                const targetOperations = this.GetOperationsFromApplyTarget(target);
+                operations.push(...targetOperations);
+            }
+        }
+
+        if (section.sections) {
+            for (const i in section.sections) {
+                const subsection = section.sections[i];
+                const subsectionOperations = this.GetOperationsFromApplySection(subsection);
+                operations.push(...subsectionOperations);
+            }
+        }
+
+        return operations;
+    }
+
     GetOperationsFromApplyConfig(applyConfigurations: ApplyRootModel[]): IOperation[] {
         const operations: IOperation[] = [];
 
-        //for (const i in applyConfigurations) {
-        //    const applyConfiguration = applyConfigurations[i];
-
-        //    for (const o in applyConfiguration.packages) {
-        //        const applyPackage = applyConfiguration.packages[o];
-
-        //        if (applyPackage.install) {
-        //            const installPackageModel = PackageModel.Parse(applyPackage.install);
-        //            const installOperation = new UpgradeOperation(installPackageModel);
-        //            operations.push(installOperation);
-        //        }
-        //        else if (applyPackage.uninstall) {
-        //            const uninstallPackageModel = PackageModel.Parse(applyPackage.uninstall);
-        //            const uninstallOperation = new UninstallOperation(uninstallPackageModel);
-        //            operations.push(uninstallOperation);
-        //        }
-        //    }
-        //}
+        for (const i in applyConfigurations) {
+            const applyConfiguration = applyConfigurations[i];
+            if (applyConfiguration) {
+                const configurationOperations = this.GetOperationsFromApplySection(applyConfiguration);
+                operations.push(...configurationOperations);
+            }
+        }
 
         return operations;
     }

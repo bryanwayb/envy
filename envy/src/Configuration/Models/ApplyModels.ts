@@ -1,3 +1,10 @@
+import { EnumOperatingSystem } from "../../Services/ProcessService";
+
+export enum EnumTargetOS {
+    Windows = 'windows',
+    Linux = 'linux'
+}
+
 export class ApplyOperationModel {
     constructor(data: any) {
         this.install = data.install;
@@ -85,17 +92,24 @@ export class ApplyTargetModel extends SectionAndTargetBase {
     constructor(data: any) {
         super(data);
 
-        this.os = data.os;
+        if (data.os
+            && typeof data.os == 'string') {
+            this.os = data.os.toLowerCase();
+        }
         this.distributions = data.distributions;
     }
 
-    public os: string;
+    public os: EnumTargetOS;
     public distributions: string[];
 
     public Validate(): string[] {
         const validationErrors: string[] = [];
 
         // TODO: Perform distro and OS setting validation
+
+        if (!this.os) {
+            validationErrors.push('target is missing an OS');
+        }
 
         if (!this.operations || this.operations.length === 0) {
             validationErrors.push('target is missing operations');
@@ -104,6 +118,37 @@ export class ApplyTargetModel extends SectionAndTargetBase {
         validationErrors.push(...super.Validate());
 
         return validationErrors;
+    }
+
+    public CanTargetOS(os: EnumOperatingSystem): boolean {
+        if (os === EnumOperatingSystem.Windows) {
+            return this.os === EnumTargetOS.Windows;
+        }
+        else if (os === EnumOperatingSystem.Linux) {
+            return this.os === EnumTargetOS.Linux;
+        }
+
+        return false; // Default to no match since OS is required
+    }
+
+    public CanTargetDistro(distro: string): boolean {
+        if (distro
+            && this.distributions
+            && this.distributions.length > 0) {
+            const lowerDistro = distro.toLowerCase();
+
+            for (const i in this.distributions) {
+                const distribution = this.distributions[i];
+
+                if (distribution.toLowerCase() === lowerDistro) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }
 

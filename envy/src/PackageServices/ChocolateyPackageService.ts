@@ -1,7 +1,7 @@
 import Container, { Service } from 'typedi';
 import { IPackageService } from '../Interfaces/IPackageService';
 import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageService } from '../../consts';
-import ProcessService, { OperatingSystem } from '../Services/ProcessService';
+import ProcessService, { EnumOperatingSystem } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
 import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
@@ -201,7 +201,7 @@ export default class ChocolateyPackageService implements IPackageService {
     async IsServiceAvailable(): Promise<boolean> {
         const config = await this.GetConfiguration();
         return config.enabled
-            && this._processService.GetOS() === OperatingSystem.Windows
+            && this._processService.GetOS() === EnumOperatingSystem.Windows
             && await this._processService.FindInPath(config.rootCommand) !== null;
     }
 };

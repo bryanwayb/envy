@@ -1,6 +1,8 @@
 import Container, { Service } from 'typedi';
 import CommandLineService from './CommandLineService';
 
+import chalk from 'chalk';
+
 export enum LogLevel {
     Trace,
     Info
@@ -35,7 +37,8 @@ export default class LoggerService {
 
     Log(logLevel: LogLevel, input: string): void {
         if (this.IsEnabled(logLevel)) {
-            console.log(`[${this._scope ? `${this._scope},` : ''}${logLevelToString(logLevel)}]: ${input}`);
+            const scope = chalk.whiteBright(this._scope ? `${this._scope},` : '');
+            console.log(`[${scope}${logLevelToString(logLevel)}]: ${input}`);
         }
     }
 

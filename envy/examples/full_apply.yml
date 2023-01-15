@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./apply_schema.json
+# #yaml-language-server: $schema=./apply_schema.json
 
 # A default "root" target is implied which allows for simple configs if desired
 # This is similar to doing the following:
