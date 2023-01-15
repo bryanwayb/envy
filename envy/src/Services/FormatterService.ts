@@ -7,7 +7,7 @@ export default class FormatterService {
     private readonly _logger = Container.get(LoggerService).ScopeByType(FormatterService);
 
     String<T>(input: string, data: T): string {
-        //this._logger.LogTrace(`formatting string of template: ${input}, data = ${this._logger.Serialize(data)}`);
+        this._logger.LogTrace(`formatting string of template: ${input}, data = ${this._logger.Serialize(data)}`);
         const template = compile(input);
 
         const dataKeys = Object.keys(data);

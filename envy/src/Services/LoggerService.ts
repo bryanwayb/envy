@@ -1,7 +1,7 @@
 import Container, { Service } from 'typedi';
 import CommandLineService from './CommandLineService';
-
-import chalk from 'chalk';
+import { } from 'colors/safe';
+import { gray as textGray, cyan as textBlue, green as textGreen } from 'colors';
 
 export enum LogLevel {
     Trace,
@@ -11,9 +11,9 @@ export enum LogLevel {
 function logLevelToString(logLevel: LogLevel): string {
     switch (logLevel) {
         case LogLevel.Trace:
-            return 'trace';
+            return textBlue('trace');
         case LogLevel.Info:
-            return 'info';
+            return textGreen('info');
         default:
             return 'unknown';
     }
@@ -35,9 +35,9 @@ export default class LoggerService {
         return this._enableConsoleOutput;
     }
 
-    Log(logLevel: LogLevel, input: string): void {
+    async Log(logLevel: LogLevel, input: string): Promise<void> {
         if (this.IsEnabled(logLevel)) {
-            const scope = chalk.whiteBright(this._scope ? `${this._scope},` : '');
+            const scope = textGray(this._scope ? `${this._scope},` : '');
             console.log(`[${scope}${logLevelToString(logLevel)}]: ${input}`);
         }
     }
