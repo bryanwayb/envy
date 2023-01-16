@@ -88,7 +88,7 @@ export default abstract class BaseCommand {
             this._logger.LogTrace(`checking if package manager ${packageManager} is available`);
 
             const packageManagerInstance = this._packageServiceFactory.GetInstance(packageManager);
-            if (await packageManagerInstance.IsServiceAvailable()) {
+            if (!await packageManagerInstance.IsServiceAvailable()) {
                 this._logger.LogTrace(`package manager ${packageManager} is not available`);
                 if (await packageManagerInstance.IsServiceInstallable()) {
                     this._logger.LogTrace(`package manager ${packageManager} is installable`);
