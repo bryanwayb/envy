@@ -23,15 +23,18 @@ export default class UpgradeOperation extends InstallOperation implements IOpera
         const packageWithoutVersion = new PackageModel(this.PackageModel);
         packageWithoutVersion.Version = null;
         this._installedPackage = await this._packageService.GetInstalledPackage(packageWithoutVersion);
-    }
 
-    async Execute(): Promise<void> {
         if (this._installedPackage) {
             if (this._installedPackage.Version === this._availablePackage.Version) {
                 this.EmitEvent('success', `package already installed`);
                 this._logger.LogTrace(`${this._installedPackage} is already at the requested version, ignoring`);
             }
-            else {
+        }
+    }
+
+    async Execute(): Promise<void> {
+        if (this._installedPackage) {
+            if (this._installedPackage.Version !== this._availablePackage.Version) {
                 this.EmitEvent('update', `upgrading from ${this._installedPackage.Version} to ${this._availablePackage.Version}`);
                 this._logger.LogTrace(`${this._availablePackage} exists in package manager, upgrading from ${this._installedPackage} to ${this._availablePackage}`);
 

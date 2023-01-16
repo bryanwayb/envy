@@ -6,12 +6,10 @@ import { join as joinPath } from 'path';
 import { ApplyRootModel, ApplySectionModel, ApplyTargetModel, ApplyOperationModel } from '../Configuration/Models/ApplyModels';
 import YamlSerializationService from '../Services/YamlSerializationService';
 import { IOperation } from '../Interfaces/IOperation';
-import { PackageModel } from '../PackageServices/Models/PackageModel';
 import UninstallOperation from '../Operations/UninstallOperation';
 import UpgradeOperation from '../Operations/UpgradeOperation';
 import { stat } from 'fs/promises';
 import ProcessService from '../Services/ProcessService';
-import { ConsoleSpinnerInstance } from '../Services/ConsoleGUI';
 
 const DEFAULT_CONFIG_PATHS: string[] = [
     'nv.yml'
@@ -112,13 +110,11 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             const applyPackage = applyOperations[o];
 
             if (applyPackage.install) {
-                const installPackageModel = PackageModel.Parse(applyPackage.install);
-                const installOperation = new UpgradeOperation(installPackageModel);
+                const installOperation = new UpgradeOperation(applyPackage.install);
                 operations.push(installOperation);
             }
             else if (applyPackage.uninstall) {
-                const uninstallPackageModel = PackageModel.Parse(applyPackage.uninstall);
-                const uninstallOperation = new UninstallOperation(uninstallPackageModel);
+                const uninstallOperation = new UninstallOperation(applyPackage.uninstall);
                 operations.push(uninstallOperation);
             }
         }
@@ -192,12 +188,14 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
     async Execute(): Promise<number> {
         const applyConfigurations = await this.LoadApplyConfigurations();
         const operations = this.GetOperationsFromApplyConfig(applyConfigurations);
+        const continueOperations: IOperation[] = [];
 
         const awaitPrepareOperations: Promise<void>[] = [];
         const spinners = this._consoleGUI.CreateSpinners();
 
         for (const i in operations) {
             const operation = operations[i];
+            const continueIndex = continueOperations.push(operation) - 1;
             this._logger.LogTrace(`apply ${operation.PackageModel}`);
 
             const spinnerInstance = spinners.Add(`${operation.PackageModel}`);
@@ -219,14 +217,22 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
                 catch (ex) {
                     this._logger.LogTrace(`exception ${operation.PackageModel}: ${ex}`);
                     spinnerInstance.Fail(`${operation.PackageModel}: failed to install`);
+                    continueOperations.splice(continueIndex, 1);
                 }
             })());
         }
 
         await Promise.all(awaitPrepareOperations);
 
-        for (const i in operations) {
-            const operation = operations[i];
+        if (continueOperations.length != operations.length) {
+            // TODO: Not all opeartions are successful
+            // Allow switch to continue
+            console.log('error, not all apply operation preperations are successful');
+            return 1;
+        }
+
+        for (const i in continueOperations) {
+            const operation = continueOperations[i];
             await operation.Execute();
         }
 

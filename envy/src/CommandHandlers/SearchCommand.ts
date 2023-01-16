@@ -3,7 +3,6 @@ import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { DI_ICommandHandler_SearchCommand } from '../../consts';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import BaseCommand from './BaseCommand';
-import { ConsoleSpinnerInstance } from '../Services/ConsoleGUI';
 import { IPackageService } from '../Interfaces/IPackageService';
 
 @Service(DI_ICommandHandler_SearchCommand)

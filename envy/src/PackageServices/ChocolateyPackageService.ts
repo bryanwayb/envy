@@ -135,7 +135,7 @@ export default class ChocolateyPackageService implements IPackageService {
 
         const foundResults = this.ParseRawChocolateyPackageList(response);
 
-        const filteredResults = foundResults.filter(f => packageModel.Name === f.Name);
+        const filteredResults = foundResults.filter(f => packageModel.Name.toLowerCase() === f.Name.toLowerCase());
 
         if (filteredResults.length === 1) {
             return filteredResults[0];

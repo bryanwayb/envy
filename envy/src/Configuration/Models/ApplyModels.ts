@@ -1,3 +1,4 @@
+import { PackageModel } from "../../PackageServices/Models/PackageModel";
 import { EnumOperatingSystem } from "../../Services/ProcessService";
 
 export enum EnumTargetOS {
@@ -7,30 +8,33 @@ export enum EnumTargetOS {
 
 export class ApplyOperationModel {
     constructor(data: any) {
-        this.install = data.install;
-        this.uninstall = data.uninstall;
+        this.install = PackageModel.Parse(data.install);
+        this.uninstall = PackageModel.Parse(data.uninstall);
     }
 
-    public install: string;
-    public uninstall: string;
-
-    public HasInstall(): boolean {
-        return this.install && this.install.trim() !== '';
-    }
-
-    public HasUninstall(): boolean {
-        return this.uninstall && this.uninstall.trim() !== '';
-    }
+    public install: PackageModel = null;
+    public uninstall: PackageModel = null;
 
     public Validate(): string[] {
         const validationErrors: string[] = [];
 
-        if (this.HasInstall()
-            && this.HasUninstall()) {
+        if (this.install !== null
+            && this.uninstall !== null) {
             validationErrors.push(`only a single action can be specified, install = ${this.install}, uninstall = ${this.uninstall}`);
         }
-        if (!(this.HasInstall() || this.HasUninstall())) {
+        if (this.install === null
+            && this.uninstall === null) {
             validationErrors.push('an action was not specified');
+        }
+
+        if (this.install !== null
+            && !this.install.HasManager()) {
+            validationErrors.push(`install action with package ${this.install.Name} did not specify a manager`);
+        }
+
+        if (this.uninstall !== null
+            && !this.uninstall.HasManager()) {
+            validationErrors.push(`uninstall action with package ${this.install.Name} did not specify a manager`);
         }
 
         return validationErrors;
