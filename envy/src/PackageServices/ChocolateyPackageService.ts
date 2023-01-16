@@ -7,7 +7,6 @@ import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
 import { ChocolateyConfigurationModel } from '../Configuration/Models/ConfigurationModel';
 import LoggerService from '../Services/LoggerService';
-import LockPoolService from '../Services/LockPoolService';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService implements IPackageService {
@@ -16,7 +15,6 @@ export default class ChocolateyPackageService implements IPackageService {
     private _processService = Container.get(ProcessService);
     private _formatterService = Container.get<FormatterService>(FormatterService);
     private _logger = Container.get(LoggerService).ScopeByType(ChocolateyPackageService);
-    private _lockPool = Container.get(LockPoolService);
 
     private async GetConfiguration(): Promise<ChocolateyConfigurationModel> {
         const configuraitonService = Container.get<ConfigurationService>(DI_IConfiguration_Configuration)

@@ -5,13 +5,11 @@ import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import LoggerService from '../Services/LoggerService';
 import { IOperation } from "../Interfaces/IOperation";
-import LockPoolService from "../Services/LockPoolService";
 
 export default abstract class BaseOperation extends EventEmitter implements IOperation {
     public readonly PackageModel: PackageModel;
     protected readonly _logger = Container.get(LoggerService).ScopeByName(this.constructor.name);
     protected readonly _packageServiceFactory = Container.get<IPackageServiceFactory>(DI_IPackageServiceFactory);
-    protected readonly _lockPoolService = Container.get(LockPoolService);
 
     constructor(packageModel: PackageModel) {
         super();

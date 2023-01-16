@@ -1,5 +1,4 @@
 import { PackageModel } from "../PackageServices/Models/PackageModel";
-import ResultModel from "../PackageServices/Models/ResultModel";
 
 export interface IPackageService {
     ServiceIdentifier: string;
@@ -14,7 +13,7 @@ export interface IPackageService {
     GetExistingInstalledVersion(packageModel: PackageModel): Promise<PackageModel>;
     SearchPackages(packageModel: PackageModel): Promise<Array<PackageModel>>;
 
-    InstallPackage(packageModel: PackageModel): Promise<ResultModel>;
+    InstallPackage(packageModel: PackageModel): Promise<void>;
     UninstallPackage(packageModel: PackageModel): Promise<void>;
     UpgradePackage(packageModel: PackageModel): Promise<void>;
 };
