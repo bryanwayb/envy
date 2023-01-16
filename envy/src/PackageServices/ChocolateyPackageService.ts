@@ -120,7 +120,7 @@ export default class ChocolateyPackageService implements IPackageService {
         });
 
         const foundResults = this.ParseRawChocolateyPackageList(response);
-        const filteredResults = foundResults.filter(f => f.Name === packageModel.Name);
+        const filteredResults = foundResults.filter(f => f.Name.toLowerCase() === packageModel.Name.toLowerCase());
 
         return filteredResults.length > 0 ? filteredResults[0] : null;
     }
