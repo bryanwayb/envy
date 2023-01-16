@@ -1,11 +1,12 @@
 import Container, { Service } from 'typedi';
 import CommandLineService from './CommandLineService';
 import { } from 'colors/safe';
-import { gray as textGray, cyan as textBlue, green as textGreen } from 'colors';
+import { gray as textGray, cyan as textBlue, green as textGreen, red as textRed } from 'colors';
 
 export enum LogLevel {
     Trace,
-    Info
+    Info,
+    Error
 };
 
 function logLevelToString(logLevel: LogLevel): string {
@@ -14,6 +15,8 @@ function logLevelToString(logLevel: LogLevel): string {
             return textBlue('trace');
         case LogLevel.Info:
             return textGreen('info');
+        case LogLevel.Error:
+            return textRed('error');
         default:
             return 'unknown';
     }
@@ -44,6 +47,10 @@ export default class LoggerService {
 
     LogTrace(input: string): void {
         this.Log(LogLevel.Trace, input);
+    }
+
+    LogError(input: string): void {
+        this.Log(LogLevel.Error, input);
     }
 
     ScopeByType<T>(type: new () => T): LoggerService {

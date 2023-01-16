@@ -29,6 +29,12 @@ export default class UpgradeOperation extends InstallOperation implements IOpera
                 this.EmitEvent('success', `package already installed`);
                 this._logger.LogTrace(`${this._installedPackage} is already at the requested version, ignoring`);
             }
+            else {
+                this.EmitEvent('update', `ready to upgrade`);
+            }
+        }
+        else {
+            this.EmitEvent('update', `ready to install`);
         }
     }
 
@@ -38,9 +44,13 @@ export default class UpgradeOperation extends InstallOperation implements IOpera
                 this.EmitEvent('update', `upgrading from ${this._installedPackage.Version} to ${this._availablePackage.Version}`);
                 this._logger.LogTrace(`${this._availablePackage} exists in package manager, upgrading from ${this._installedPackage} to ${this._availablePackage}`);
 
-                await this._packageService.UpgradePackage(this._availablePackage);
-
-                this.EmitEvent('success', `installed`);
+                try {
+                    await this._packageService.UpgradePackage(this._availablePackage);
+                    this.EmitEvent('success', `installed`);
+                }
+                catch (ex) {
+                    this.EmitEvent('fail', 'install failed');
+                }
             }
         }
         else {

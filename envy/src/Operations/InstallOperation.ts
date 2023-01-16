@@ -11,7 +11,13 @@ export default class InstallOperation extends BaseOperation implements IOperatio
 
     async Install(): Promise<void> {
         this.EmitEvent('update', `installing`);
-        await this._packageService.InstallPackage(this._availablePackage);
-        this.EmitEvent('success', `installed`);
+
+        try {
+            await this._packageService.InstallPackage(this._availablePackage);
+            this.EmitEvent('success', `installed`);
+        }
+        catch (ex) {
+            this.EmitEvent('fail', 'install failed');
+        }
     }
 }

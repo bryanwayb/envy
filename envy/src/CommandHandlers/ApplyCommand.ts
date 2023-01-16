@@ -210,6 +210,11 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
                 spinnerInstance.Success(`${operation.PackageModel}: ${data}`);
             });
 
+            operation.OnEvent('fail', data => {
+                this._logger.LogError(`fail ${operation.PackageModel}: ${data}`);
+                spinnerInstance.Fail(`${operation.PackageModel}: ${data}`);
+            });
+
             awaitPrepareOperations.push((async (): Promise<void> => {
                 try {
                     await operation.Prepare();
