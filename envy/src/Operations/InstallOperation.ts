@@ -1,19 +1,17 @@
 import { Service } from 'typedi';
 import { IOperation } from '../Interfaces/IOperation';
+import { IPackageService } from '../Interfaces/IPackageService';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import BaseOperation from './BaseOperation';
 
 @Service()
 export default class InstallOperation extends BaseOperation implements IOperation {
-    async Install(packageModel: PackageModel): Promise<void> {
-        const packageService = this._packageServiceFactory.GetInstance(packageModel.Manager);
+    protected _availablePackage: PackageModel = null;
+    protected _packageService: IPackageService = null;
 
-        this.EmitEvent('update', `installing ${packageModel}`);
-        await packageService.InstallPackage(packageModel);
+    async Install(): Promise<void> {
+        this.EmitEvent('update', `installing`);
+        await this._packageService.InstallPackage(this._availablePackage);
         this.EmitEvent('success', `installed`);
-    }
-
-    Execute(): Promise<void> {
-        throw new Error('Method not implemented.');
     }
 }

@@ -11,3 +11,5 @@ export const DI_IConfiguration_Configuration = 'IConfiguration<Configuration>';
 
 export const DI_IPackageServiceFactory = 'IPackageServiceFactory';
 export const DI_IPackageService_ChocolateyPackageService = 'IPackageService<ChocolateyPackageService>';
+
+export const Lock_Install = 'Lock_Install';

@@ -11,6 +11,7 @@ import UninstallOperation from '../Operations/UninstallOperation';
 import UpgradeOperation from '../Operations/UpgradeOperation';
 import { stat } from 'fs/promises';
 import ProcessService from '../Services/ProcessService';
+import { ConsoleSpinnerInstance } from '../Services/ConsoleGUI';
 
 const DEFAULT_CONFIG_PATHS: string[] = [
     'nv.yml'
@@ -192,18 +193,40 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         const applyConfigurations = await this.LoadApplyConfigurations();
         const operations = this.GetOperationsFromApplyConfig(applyConfigurations);
 
+        const awaitPrepareOperations: Promise<void>[] = [];
+        const spinners = this._consoleGUI.CreateSpinners();
+
         for (const i in operations) {
             const operation = operations[i];
             this._logger.LogTrace(`apply ${operation.PackageModel}`);
 
+            const spinnerInstance = spinners.Add(`${operation.PackageModel}`);
+
             operation.OnEvent('update', data => {
-                console.log(`${operation.PackageModel}: ${data}`);
+                this._logger.LogTrace(`update ${operation.PackageModel}: ${data}`);
+                spinnerInstance.Update(`${operation.PackageModel}: ${data}`);
             });
 
             operation.OnEvent('success', data => {
-                console.log(`${operation.PackageModel}: ${data}`);
+                this._logger.LogTrace(`success ${operation.PackageModel}: ${data}`);
+                spinnerInstance.Success(`${operation.PackageModel}: ${data}`);
             });
 
+            awaitPrepareOperations.push((async (): Promise<void> => {
+                try {
+                    await operation.Prepare();
+                }
+                catch (ex) {
+                    this._logger.LogTrace(`exception ${operation.PackageModel}: ${ex}`);
+                    spinnerInstance.Fail(`${operation.PackageModel}: failed to install`);
+                }
+            })());
+        }
+
+        await Promise.all(awaitPrepareOperations);
+
+        for (const i in operations) {
+            const operation = operations[i];
             await operation.Execute();
         }
 

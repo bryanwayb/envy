@@ -1,4 +1,4 @@
-﻿export class Queue<T> {
+﻿export default class Queue<T> {
     private readonly _queue: T[] = [];
 
     public Queue(item: T): void {

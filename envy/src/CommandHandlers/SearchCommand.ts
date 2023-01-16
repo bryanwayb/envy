@@ -21,7 +21,7 @@ export default class SearchCommand extends BaseCommand implements ICommandHandle
         for (const i in passedPackages) {
             const passedPackage = passedPackages[i];
 
-            const spinnerInstance = spinners.Add(`${[passedPackage]}`);
+            const spinnerInstance = spinners.Add(`${passedPackage}`);
 
             resultsPromises.push((async () => {
                 const searchResults = new Array<PackageModel>();
@@ -34,13 +34,13 @@ export default class SearchCommand extends BaseCommand implements ICommandHandle
                 for (const i in servicesToSearch) {
                     const packageService = packageServices[i];
 
-                    spinnerInstance.Update(`${[passedPackage]}: searching ${packageService.ServiceIdentifier}`);
+                    spinnerInstance.Update(`${passedPackage}: searching ${packageService.ServiceIdentifier}`);
                     const packageServiceSearchResults = await packageService.SearchPackages(passedPackage);
 
                     searchResults.push(...packageServiceSearchResults);
                 }
 
-                const resultText = `${[passedPackage]}: found ${searchResults.length} results`;
+                const resultText = `${passedPackage}: found ${searchResults.length} results`;
                 if (searchResults.length) {
                     spinnerInstance.Success(resultText);
                 }

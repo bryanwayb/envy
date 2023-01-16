@@ -5,14 +5,16 @@ import InstallOperation from './InstallOperation';
 
 @Service()
 export default class UpgradeOperation extends InstallOperation implements IOperation {
-    async Execute(): Promise<void> {
-        const packageService = this._packageServiceFactory.GetInstance(this.PackageModel.Manager);
+    private _installedPackage: PackageModel = null;
 
-        this.EmitEvent('update', `finding ${this.PackageModel} package`);
+    async Prepare(): Promise<void> {
+        this._packageService = this._packageServiceFactory.GetInstance(this.PackageModel.Manager);
+
+        this.EmitEvent('update', `finding package`);
         this._logger.LogTrace(`checking if ${this.PackageModel} exists in package manager`);
 
-        const availablePackage = await packageService.GetPackageAvaiableForInstall(this.PackageModel);
-        if (availablePackage === null) {
+        this._availablePackage = await this._packageService.GetPackageAvaiableForInstall(this.PackageModel);
+        if (this._availablePackage === null) {
             this._logger.LogTrace(`${this.PackageModel} does not exist in package manager`);
             // TODO: return an error object here for better error handling
             throw new Error('Could not find package');
@@ -20,25 +22,27 @@ export default class UpgradeOperation extends InstallOperation implements IOpera
 
         const packageWithoutVersion = new PackageModel(this.PackageModel);
         packageWithoutVersion.Version = null;
-        const installedPackage = await packageService.GetInstalledPackage(packageWithoutVersion);
+        this._installedPackage = await this._packageService.GetInstalledPackage(packageWithoutVersion);
+    }
 
-        if (installedPackage) {
-            if (installedPackage.Version === availablePackage.Version) {
-                this.EmitEvent('update', `${installedPackage} is already installed`);
-                this._logger.LogTrace(`${installedPackage} is already at the requested version, ignoring`);
+    async Execute(): Promise<void> {
+        if (this._installedPackage) {
+            if (this._installedPackage.Version === this._availablePackage.Version) {
+                this.EmitEvent('success', `package already installed`);
+                this._logger.LogTrace(`${this._installedPackage} is already at the requested version, ignoring`);
             }
             else {
-                this.EmitEvent('update', `upgrading from ${installedPackage} to ${availablePackage}`);
-                this._logger.LogTrace(`${availablePackage} exists in package manager, upgrading from ${installedPackage} to ${availablePackage}`);
+                this.EmitEvent('update', `upgrading from ${this._installedPackage.Version} to ${this._availablePackage.Version}`);
+                this._logger.LogTrace(`${this._availablePackage} exists in package manager, upgrading from ${this._installedPackage} to ${this._availablePackage}`);
 
-                await packageService.UpgradePackage(availablePackage);
+                await this._packageService.UpgradePackage(this._availablePackage);
 
                 this.EmitEvent('success', `installed`);
             }
         }
         else {
-            this._logger.LogTrace(`package ${availablePackage} is not installed`);
-            return await this.Install(availablePackage);
+            this._logger.LogTrace(`package ${this._availablePackage} is not installed`);
+            return await this.Install();
         }
     }
 }

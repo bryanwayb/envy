@@ -1,6 +1,6 @@
-import { Queue } from "./Queue";
+import Queue from "./Queue";
 
-export class Lock {
+export default class Lock {
     private readonly _waitQueue = new Queue<() => void>();
     private _locked: boolean = false;
 

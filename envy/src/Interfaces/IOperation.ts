@@ -5,4 +5,5 @@ export interface IOperation extends EventEmitter {
     PackageModel: PackageModel;
 
     Execute(): Promise<void>;
+    Prepare(): Promise<void>;
 };
