@@ -18,26 +18,17 @@ export default class CommandLineService {
     });
 
     GetCommand(): string {
-        if (this._arguments.argv.hasOwnProperty('install')) {
-            return 'install';
-        }
-        else if (this._arguments.argv.hasOwnProperty('list')) {
-            return 'list';
-        }
-        else if (this._arguments.argv.hasOwnProperty('search')) {
-            return 'search';
-        }
-        else if (this._arguments.argv.hasOwnProperty('uninstall')) {
-            return 'uninstall';
-        }
-        else if (this._arguments.argv.hasOwnProperty('upgrade')) {
-            return 'upgrade';
-        }
-        else if (this._arguments.argv.hasOwnProperty('apply')) {
-            return 'apply';
+        const args = this._arguments.argv as any;
+
+        if (args._.length) {
+            return args._[0];
         }
 
         return null;
+    }
+
+    HelpText(): Promise<string> {
+        return this._arguments.getHelp();
     }
 
     GetOption(...names: string[]): string {
@@ -81,7 +72,7 @@ export default class CommandLineService {
         return this.HasOption('v', 'verbose');
     }
 
-    IsConfirm(): boolean {
+    IsConfirmed(): boolean {
         return this.HasOption('c', 'confirm');
     }
 };

@@ -125,7 +125,7 @@ export default class ConsoleGUI {
     }
 
     async ConfirmUserInput(prompt: string): Promise<boolean> {
-        const autoConfirm = this._commandLineService.IsConfirm();
+        const autoConfirm = this._commandLineService.IsConfirmed();
 
         if (autoConfirm) {
             this.Output(`${prompt} [y/n]: y (auto confirmed)`);
