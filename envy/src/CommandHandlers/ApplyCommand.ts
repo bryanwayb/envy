@@ -110,10 +110,12 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             const applyPackage = applyOperations[o];
 
             if (applyPackage.install) {
+                this.AddRequiredPackageManager(applyPackage.install.Manager);
                 const installOperation = new UpgradeOperation(applyPackage.install);
                 operations.push(installOperation);
             }
             else if (applyPackage.uninstall) {
+                this.AddRequiredPackageManager(applyPackage.uninstall.Manager);
                 const uninstallOperation = new UninstallOperation(applyPackage.uninstall);
                 operations.push(uninstallOperation);
             }
@@ -188,6 +190,11 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
     async Execute(): Promise<number> {
         const applyConfigurations = await this.LoadApplyConfigurations();
         const operations = this.GetOperationsFromApplyConfig(applyConfigurations);
+
+        if (!await this.PreparePackageManagers()) {
+            return 1;
+        }
+
         const continueOperations: IOperation[] = [];
 
         const awaitPrepareOperations: Promise<void>[] = [];

@@ -4,6 +4,8 @@ export interface IPackageService {
     ServiceIdentifier: string;
 
     IsServiceAvailable(): Promise<boolean>;
+    IsServiceInstallable(): Promise<boolean>;
+    InstallService(): Promise<void>;
 
     IsInstalled(packageModel: PackageModel): Promise<boolean>;
     GetInstalledPackage(packageModel: PackageModel): Promise<PackageModel>;

@@ -3,6 +3,8 @@ import { printTable } from 'console-table-printer';
 import * as Spinnies from 'spinnies';
 import { randomUUID } from 'crypto';
 import LoggerService, { LogLevel } from './LoggerService';
+import CommandLineService from './CommandLineService';
+import { createInterface } from 'readline';
 
 export interface IConsoleSpinnerInstance {
     Update(text: string): void;
@@ -29,13 +31,13 @@ export class ConsoleSpinnerInstance implements IConsoleSpinnerInstance {
         });
     }
 
-    Success(text: string): void  {
+    Success(text: string): void {
         this._spinnies.succeed(this._id, {
             text
         });
     }
 
-    Fail(text: string): void  {
+    Fail(text: string): void {
         this._spinnies.fail(this._id, {
             text
         });
@@ -54,11 +56,11 @@ export class VerboseConsoleSpinnerInstance implements IConsoleSpinnerInstance {
         this._logger.LogTrace(`update spinner ${this._id}: ${text}`);
     }
 
-    Success(text: string): void  {
+    Success(text: string): void {
         this._logger.LogTrace(`success spinner ${this._id}: ${text}`);
     }
 
-    Fail(text: string): void  {
+    Fail(text: string): void {
         this._logger.LogTrace(`fail spinner ${this._id}: ${text}`);
     }
 }
@@ -90,6 +92,7 @@ export class VerboseConsoleSpinners implements IConsoleSpinners {
 @Service()
 export default class ConsoleGUI {
     private readonly _logger = Container.get(LoggerService).ScopeByType(ConsoleGUI);
+    protected readonly _commandLineService = Container.get(CommandLineService);
 
     PrintConsoleTable(records: Array<any>): void {
         printTable(records);
@@ -101,6 +104,46 @@ export default class ConsoleGUI {
         }
         else {
             return new ConsoleSpinners();
+        }
+    }
+
+    Output(message: string): void {
+        console.log(message);
+    }
+
+    UserInput(prompt: string): Promise<string> {
+        return new Promise<string>(resolve => {
+            const readlineInterface = createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+
+            readlineInterface.question(`${prompt}: `, answer => {
+                resolve(answer);
+            });
+        });
+    }
+
+    async ConfirmUserInput(prompt: string): Promise<boolean> {
+        const autoConfirm = this._commandLineService.IsConfirm();
+
+        if (autoConfirm) {
+            this.Output(`${prompt} [y/n]: y (auto confirmed)`);
+            return true;
+        }
+
+        while (true) {
+            const response = (await this.UserInput(`${prompt} [y/n (default)]`)).trim().toLowerCase();
+
+            switch (response) {
+                case 'y':
+                    return true;
+                case '':
+                case 'n':
+                    return false;
+                default:
+                    this.Output(`${response} is invalid\n`);
+            }
         }
     }
 };

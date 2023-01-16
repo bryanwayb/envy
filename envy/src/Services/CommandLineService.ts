@@ -9,6 +9,11 @@ export default class CommandLineService {
             alias: 'v',
             description: 'Enable detailed logging',
             type: 'boolean'
+        },
+        'confirm': {
+            alias: 'c',
+            description: 'Automatically confirms requests for user input',
+            type: 'boolean'
         }
     });
 
@@ -74,5 +79,9 @@ export default class CommandLineService {
 
     IsVerbose(): boolean {
         return this.HasOption('v', 'verbose');
+    }
+
+    IsConfirm(): boolean {
+        return this.HasOption('c', 'confirm');
     }
 };

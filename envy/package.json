@@ -1,6 +1,6 @@
 {
   "name": "envy",
-  "version": "0.0.0",
+  "version": "alpha-0.0.3",
   "description": "envy",
   "main": "app.js",
   "author": {

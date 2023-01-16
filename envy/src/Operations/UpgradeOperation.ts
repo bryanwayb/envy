@@ -16,7 +16,7 @@ export default class UpgradeOperation extends InstallOperation implements IOpera
         this._availablePackage = await this._packageService.GetPackageAvaiableForInstall(this.PackageModel);
         if (this._availablePackage === null) {
             this._logger.LogTrace(`${this.PackageModel} does not exist in package manager`);
-            // TODO: return an error object here for better error handling
+            this.EmitEvent('fail', 'package not found');
             throw new Error('Could not find package');
         }
 

@@ -204,4 +204,14 @@ export default class ChocolateyPackageService implements IPackageService {
             && this._processService.GetOS() === EnumOperatingSystem.Windows
             && await this._processService.FindInPath(config.rootCommand) !== null;
     }
+
+    async IsServiceInstallable(): Promise<boolean> {
+        const config = await this.GetConfiguration();
+        return config.enabled
+            && this._processService.GetOS() === EnumOperatingSystem.Windows;
+    }
+
+    InstallService(): Promise<void> {
+        return Promise.resolve();
+    }
 };
