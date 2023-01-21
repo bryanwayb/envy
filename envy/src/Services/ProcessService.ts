@@ -82,6 +82,16 @@ export default class ProcessService {
         return null;
     }
 
+    async ExecutePowerShell(command: string): Promise<string> {
+        const powerShellExecutable = await this.FindInPath('pwsh') || await this.FindInPath('powershell');
+
+        if (powerShellExecutable === null) {
+            return null;
+        }
+
+        return await this.Execute(`"${powerShellExecutable}" -ExecutionPolicy Bypass -NoLogo -c ${command}`);
+    }
+
     Execute(command: string, interactiveHandler?: (data: string) => string): Promise<string> {
         return new Promise((resolve, reject) => {
             this._logger.LogTrace(`executing command: ${command}`);

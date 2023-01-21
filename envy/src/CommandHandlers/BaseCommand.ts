@@ -133,14 +133,14 @@ export default abstract class BaseCommand {
 
             if (shouldInstall) {
                 try {
-                    this.InstallPackageManagers(installableManagers);
+                    await this.InstallPackageManagers(installableManagers);
 
                     this._consoleGUI.Output('');
 
                     return true;
                 }
                 catch (ex) {
-                    this._consoleGUI.Output('Error during package manager install');
+                    this._consoleGUI.Output(`Error during package manager install\n\n${ex}`);
                     return false;
                 }
             }
@@ -153,7 +153,14 @@ export default abstract class BaseCommand {
         return true;
     }
 
-    private InstallPackageManagers(packageManagers: string[]): void {
+    private async InstallPackageManagers(packageManagers: string[]): Promise<void> {
+        for (const i in packageManagers) {
+            const packageManager = packageManagers[i];
+            const packageService = this._packageServiceFactory.GetInstance(packageManager);
 
+            if (!await packageService.InstallService()) {
+                throw new Error(`Error while attempting to install the ${packageManager} service`);
+            }
+        }
     }
 }

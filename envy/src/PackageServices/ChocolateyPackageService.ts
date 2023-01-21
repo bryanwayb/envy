@@ -211,7 +211,22 @@ export default class ChocolateyPackageService implements IPackageService {
             && this._processService.GetOS() === EnumOperatingSystem.Windows;
     }
 
-    InstallService(): Promise<void> {
-        return Promise.resolve();
+    async InstallService(): Promise<boolean> {
+        const config = await this.GetConfiguration();
+        this._logger.LogTrace(`installing choco`);
+        if (!config.dryRun) {
+            try {
+                await this._processService.ExecutePowerShell(`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`);
+
+                // TODO: Check the output to see if installation was successful
+            }
+            catch (ex) {
+                return false;
+            }
+        }
+        else {
+            this._logger.LogTrace(`dryrun is enabled, not actually installing`);
+        }
+        return true;
     }
 };
