@@ -47,6 +47,16 @@ export default class InstallCommand extends BaseCommand implements ICommandHandl
 
     async Execute(): Promise<number> {
         const packagesToInstall = await this.GetPackagesToInstall();
+
+        for (const i in packagesToInstall) {
+            const packageToInstall = packagesToInstall[i];
+            this.AddRequiredPackageManager(packageToInstall.Manager);
+        }
+
+        if (!await this.PreparePackageManagers()) {
+            return 1;
+        }
+
         for (const i in packagesToInstall) {
             const packageToInstall = packagesToInstall[i];
             const packageService = this._packageServiceFactory.GetInstance(packageToInstall.Manager);

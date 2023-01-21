@@ -69,6 +69,20 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
 
         for (const i in installPackages) {
             const installPackage = installPackages[i];
+            this.AddRequiredPackageManager(installPackage.Manager);
+        }
+
+        for (const i in upgradePackages) {
+            const upgradePackage = upgradePackages[i];
+            this.AddRequiredPackageManager(upgradePackage.Manager);
+        }
+
+        if (!await this.PreparePackageManagers()) {
+            return 1;
+        }
+
+        for (const i in installPackages) {
+            const installPackage = installPackages[i];
             const packageService = this._packageServiceFactory.GetInstance(installPackage.Manager);
 
             await packageService.InstallPackage(installPackage);

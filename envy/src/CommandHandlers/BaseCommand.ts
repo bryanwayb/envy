@@ -103,7 +103,7 @@ export default abstract class BaseCommand {
 
         if (missingManagers.length + installableManagers.length > 0) {
             if (missingManagers.length > 0) {
-                this._consoleGUI.Output('The following package managers are missing and cannot be auto installed');
+                this._consoleGUI.Output('The following package managers are missing but cannot be auto installed');
 
                 for (const i in missingManagers) {
                     const missingManager = missingManagers[i];
