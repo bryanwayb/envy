@@ -89,3 +89,4 @@ tests/cases/user/prettier/prettier
 **/*.js
 **/*.js.map
 **/*.njsproj.user
+obj/

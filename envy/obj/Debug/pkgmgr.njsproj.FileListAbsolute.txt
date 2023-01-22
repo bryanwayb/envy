@@ -1,3 +1,0 @@
-E:\Source\pkgmgr\pkgmgr\obj\Debug\pkgmgr.njsproj.AssemblyReference.cache
-E:\Source\pkgmgr\pkgmgr\obj\Debug\pkgmgr.njsproj.CoreCompileInputs.cache
-E:\Source\pkgmgr\pkgmgr\bin\Microsoft.NodejsTools.WebRole.dll
