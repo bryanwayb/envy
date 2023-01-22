@@ -10,19 +10,20 @@ export default class PackageServiceFactory implements IPackageServiceFactory {
         "choco": DI_IPackageService_ChocolateyPackageService
     };
 
-    GetInstance(name: string, options: PackageServiceOptions): IPackageService {
+    async GetInstance(name: string, options: PackageServiceOptions): Promise<IPackageService> {
         if (!this._packageManagerMapping[name]) {
             throw new Error(`${name} is a not a registered package manager`);
         }
 
-        return Container.get<IPackageService>(this._packageManagerMapping[name]).WithOptions(options);
+        const instance = Container.get<IPackageService>(this._packageManagerMapping[name]);
+        return await instance.WithOptions(options);
     }
 
     async GetAllInstances(options: PackageServiceOptions): Promise<IPackageService[]> {
         const ret = new Array<IPackageService>();
 
         for (const i in this._packageManagerMapping) {
-            const packageServiceInstance = this.GetInstance(i, options);
+            const packageServiceInstance = await this.GetInstance(i, options);
 
             if (await packageServiceInstance.IsServiceAvailable()) {
                 ret.push(packageServiceInstance);

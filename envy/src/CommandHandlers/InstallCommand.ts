@@ -19,7 +19,7 @@ export default class InstallCommand extends BaseCommand implements ICommandHandl
 
             await this.EnsurePackageHasManager(passedPackage);
 
-            const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
+            const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
             this._logger.LogTrace(`attempting to resolve ${passedPackage}`);
 
             const resolvedPackage = await packageService.GetPackageAvaiableForInstall(passedPackage);
@@ -62,7 +62,7 @@ export default class InstallCommand extends BaseCommand implements ICommandHandl
 
         for (const i in packagesToInstall) {
             const packageToInstall = packagesToInstall[i];
-            const packageService = this._packageServiceFactory.GetInstance(packageToInstall.Manager, packageManagerOptions);
+            const packageService = await this._packageServiceFactory.GetInstance(packageToInstall.Manager, packageManagerOptions);
 
             this._logger.LogTrace(`attempting to install ${packageToInstall}`);
             await packageService.InstallPackage(packageToInstall);

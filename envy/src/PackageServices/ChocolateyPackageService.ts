@@ -19,12 +19,17 @@ export default class ChocolateyPackageService implements IPackageService {
 
     private _options = new PackageServiceOptions();
 
-    WithOptions(options: PackageServiceOptions): IPackageService {
+    public async WithOptions(options: PackageServiceOptions): Promise<IPackageService> {
         if (options.Context !== this._options.Context) {
             const instance = new ChocolateyPackageService();
             instance.SetOptions(options);
             return instance;
         }
+
+        if (!await this._processService.IsAdmin()) {
+            throw new Error('Using Chocolatey for global use requires admin access');
+        }
+
         return this;
     }
 

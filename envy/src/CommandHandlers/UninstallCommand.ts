@@ -21,7 +21,7 @@ export default class UninstallCommand extends BaseCommand implements ICommandHan
 
                 await this.EnsurePackageHasManager(passedPackage);
 
-                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
+                const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
 
                 const installedPackage = await packageService.GetInstalledPackage(passedPackage);
 
@@ -51,7 +51,7 @@ export default class UninstallCommand extends BaseCommand implements ICommandHan
         for (const i in foundPackages) {
             const foundPackage = foundPackages[i];
 
-            const packageService = this._packageServiceFactory.GetInstance(foundPackage.Manager, packageManagerOptions);
+            const packageService = await this._packageServiceFactory.GetInstance(foundPackage.Manager, packageManagerOptions);
 
             await packageService.UninstallPackage(foundPackage);
         }

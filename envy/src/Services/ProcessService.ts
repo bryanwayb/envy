@@ -14,6 +14,8 @@ export enum EnumOperatingSystem {
 export default class ProcessService {
     private readonly _logger = Container.get(LoggerService).ScopeByType(ProcessService);
 
+    private _isAdmin: boolean = null;
+
     GetOS(): EnumOperatingSystem {
         switch (platform().toLowerCase()) {
             case 'win32':
@@ -29,21 +31,27 @@ export default class ProcessService {
     }
 
     async IsAdmin(): Promise<boolean> {
-        this._logger.LogTrace('checking if running as admin');
-        switch (this.GetOS()) {
-            case EnumOperatingSystem.Windows:
-                try {
-                    await this.Execute('net session');
-                    this._logger.LogTrace('process running as admin');
-                }
-                catch (ex) {
-                    this._logger.LogTrace('process not running as admin');
-                    return false;
-                }
-                return true;
-            default:
-                return true;
+        if (this._isAdmin === null) {
+            this._logger.LogTrace('checking if running as admin');
+            switch (this.GetOS()) {
+                case EnumOperatingSystem.Windows:
+                    try {
+                        await this.Execute('net session');
+                        this._logger.LogTrace('process running as admin');
+                        this._isAdmin = true;
+                    }
+                    catch (ex) {
+                        this._logger.LogTrace('process not running as admin');
+                        this._isAdmin = false;
+                    }
+                    break;
+                default:
+                    this._isAdmin = true;
+                    break;
+            }
         }
+
+        return this._isAdmin;
     }
 
     async FindInPath(executable: string): Promise<string> {

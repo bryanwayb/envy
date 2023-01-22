@@ -4,7 +4,7 @@ import { PackageServiceOptions } from "../PackageServices/Models/PackageServiceO
 export interface IPackageService {
     ServiceIdentifier: string;
 
-    WithOptions(options: PackageServiceOptions): IPackageService;
+    WithOptions(options: PackageServiceOptions): Promise<IPackageService>;
 
     IsServiceAvailable(): Promise<boolean>;
     IsServiceInstallable(): Promise<boolean>;

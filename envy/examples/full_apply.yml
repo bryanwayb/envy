@@ -18,7 +18,7 @@ targets:
     # -- WARNING -- Contexts are a planned experimental feature and may not be fully supported
 
     # Operations can be scopped to a context, by default the context is set to "system", like so:
-    context: user
+    context: system
     # Contexts can be one of the following: system, user, directory (can also just be a path, like below)
     # context: ./context/path
 
@@ -61,4 +61,10 @@ sections:
             # target will inherit parent section target when not provided
             operations:
               - install: "choco:codemaid"
+  - name: user_installs
+    targets:
+      - os: windows
+        context: user
+        operations:
+          - install: "choco:lili.portable"
   - !import "import_section_example.yml"

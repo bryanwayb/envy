@@ -7,7 +7,6 @@ import { DI_IPackageServiceFactory } from "../../consts";
 import ConsoleGUI from "../Services/ConsoleGUI";
 import HashSet from "../Classes/HashSet";
 import { PackageServiceOptions } from "../PackageServices/Models/PackageServiceOptions";
-import ProcessService from "../Services/ProcessService";
 
 class PackageManagerWithOption {
     public readonly PackageManager: string;
@@ -110,7 +109,7 @@ export default abstract class BaseCommand {
             const packageManagerWithOption = packageManagersWithOptions[i];
             this._logger.LogTrace(`checking if package manager ${packageManagerWithOption} is available`);
 
-            const packageManagerInstance = this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
+            const packageManagerInstance = await this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
             if (!await packageManagerInstance.IsServiceAvailable()) {
                 this._logger.LogTrace(`package manager ${packageManagerWithOption} is not available`);
                 if (await packageManagerInstance.IsServiceInstallable()) {
@@ -173,20 +172,13 @@ export default abstract class BaseCommand {
             }
         }
 
-        //const processService = Container.get<ProcessService>(ProcessService);
-        //const isRunningAsAdmin = await processService.IsAdmin();
-        //if (!isRunningAsAdmin) {
-        //    console.log('Not running as admin');
-        //    return false;
-        //}
-
         return true;
     }
 
     private async InstallPackageManagers(packageManagers: PackageManagerWithOption[]): Promise<void> {
         for (const i in packageManagers) {
             const packageManagerWithOption = packageManagers[i];
-            const packageService = this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
+            const packageService = await this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
 
             if (!await packageService.InstallService()) {
                 throw new Error(`Error while attempting to install the ${packageManagerWithOption} service`);

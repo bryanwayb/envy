@@ -2,6 +2,6 @@ import { PackageServiceOptions } from "../PackageServices/Models/PackageServiceO
 import { IPackageService } from "./IPackageService";
 
 export interface IPackageServiceFactory {
-    GetInstance(name: string, options: PackageServiceOptions): IPackageService;
+    GetInstance(name: string, options: PackageServiceOptions): Promise<IPackageService>;
     GetAllInstances(options: PackageServiceOptions): Promise<IPackageService[]>;
 };

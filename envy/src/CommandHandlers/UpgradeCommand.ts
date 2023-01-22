@@ -24,7 +24,7 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
                 // TODO: This throws an error, but we want to collect missing packages, fix this
                 await this.EnsurePackageHasManager(passedPackage);
 
-                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
+                const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
 
                 this._logger.LogTrace(`checking if ${passedPackage} exists in package manager`);
                 const availablePackage = await packageService.GetPackageAvaiableForInstall(passedPackage);
@@ -85,14 +85,14 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
 
         for (const i in installPackages) {
             const installPackage = installPackages[i];
-            const packageService = this._packageServiceFactory.GetInstance(installPackage.Manager, packageManagerOptions);
+            const packageService = await this._packageServiceFactory.GetInstance(installPackage.Manager, packageManagerOptions);
 
             await packageService.InstallPackage(installPackage);
         }
 
         for (const i in upgradePackages) {
             const upgradePackage = upgradePackages[i];
-            const packageService = this._packageServiceFactory.GetInstance(upgradePackage.Manager, packageManagerOptions);
+            const packageService = await this._packageServiceFactory.GetInstance(upgradePackage.Manager, packageManagerOptions);
 
             await packageService.UpgradePackage(upgradePackage);
         }
