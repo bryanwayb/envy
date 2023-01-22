@@ -4,7 +4,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>envy</Name>
     <RootNamespace>pkgmgr</RootNamespace>
-    <ScriptArguments>app search "vscode"</ScriptArguments>
+    <ScriptArguments>apply -f .\examples\full_apply.yml</ScriptArguments>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -44,6 +44,7 @@
     <Content Include="package.json" />
     <Content Include="src\Interfaces\IOperation.ts" />
     <Content Include="src\PackageServices\ChocolateyPackageService.ts" />
+    <Content Include="src\PackageServices\Models\PackageServiceOptions.ts" />
     <Content Include="src\Services\YamlSerializationService.ts" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
@@ -61,6 +62,9 @@
     <Folder Include="src\PackageServices\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="postBuild.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="prepareBuild.ts" />
     <TypeScriptCompile Include="consts.ts" />
     <TypeScriptCompile Include="src\Classes\HashSet.ts" />

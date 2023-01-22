@@ -16,7 +16,6 @@ try {
         'product-version': version,
         'file-version': version,
         'version-string': version,
-        'requested-execution-level': 'requireAdministrator',
         //'icon': 'icon path'
     }).then(() => {
         console.log('done');

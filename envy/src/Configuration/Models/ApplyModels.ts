@@ -1,4 +1,5 @@
 import { PackageModel } from "../../PackageServices/Models/PackageModel";
+import { PackageContextEnum } from "../../PackageServices/Models/PackageServiceOptions";
 import { EnumOperatingSystem } from "../../Services/ProcessService";
 
 export enum EnumTargetOS {
@@ -101,10 +102,40 @@ export class ApplyTargetModel extends SectionAndTargetBase {
             this.os = data.os.toLowerCase();
         }
         this.distributions = data.distributions;
+        this.context = data.context;
     }
 
     public os: EnumTargetOS;
     public distributions: string[];
+    public context: string;
+
+    public HasContext(): boolean {
+        return this.context && this.context.trim() !== '';
+    }
+
+    public GetContext(): PackageContextEnum {
+        if (this.HasContext()) {
+            switch (this.context.trim().toLowerCase()) {
+                case '':
+                case 'system':
+                    return PackageContextEnum.System;
+                case 'user':
+                    return PackageContextEnum.User;
+                default:
+                    return PackageContextEnum.Directory;
+            }
+        }
+
+        return PackageContextEnum.System;
+    }
+
+    public GetContextDirectory(): string {
+        if (this.GetContext() === PackageContextEnum.Directory) {
+            return this.context;
+        }
+
+        return null;
+    }
 
     public Validate(): string[] {
         const validationErrors: string[] = [];

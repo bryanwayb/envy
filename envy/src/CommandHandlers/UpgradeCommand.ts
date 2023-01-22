@@ -9,6 +9,8 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
     async Execute(): Promise<number> {
         this._logger.LogTrace(`preparing to upgrade packages`);
 
+        const packageManagerOptions = this.GetPackageOptionsFromCommandLine();
+
         const upgradePackages: { [packageVersion: string]: PackageModel } = {};
         const installPackages = new Array<PackageModel>();
         const missingPackages = new Array<PackageModel>();
@@ -22,7 +24,7 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
                 // TODO: This throws an error, but we want to collect missing packages, fix this
                 await this.EnsurePackageHasManager(passedPackage);
 
-                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager);
+                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
 
                 this._logger.LogTrace(`checking if ${passedPackage} exists in package manager`);
                 const availablePackage = await packageService.GetPackageAvaiableForInstall(passedPackage);
@@ -69,12 +71,12 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
 
         for (const i in installPackages) {
             const installPackage = installPackages[i];
-            this.AddRequiredPackageManager(installPackage.Manager);
+            this.AddRequiredPackageManager(installPackage.Manager, packageManagerOptions);
         }
 
         for (const i in upgradePackages) {
             const upgradePackage = upgradePackages[i];
-            this.AddRequiredPackageManager(upgradePackage.Manager);
+            this.AddRequiredPackageManager(upgradePackage.Manager, packageManagerOptions);
         }
 
         if (!await this.PreparePackageManagers()) {
@@ -83,14 +85,14 @@ export default class UpgradeCommand extends BaseCommand implements ICommandHandl
 
         for (const i in installPackages) {
             const installPackage = installPackages[i];
-            const packageService = this._packageServiceFactory.GetInstance(installPackage.Manager);
+            const packageService = this._packageServiceFactory.GetInstance(installPackage.Manager, packageManagerOptions);
 
             await packageService.InstallPackage(installPackage);
         }
 
         for (const i in upgradePackages) {
             const upgradePackage = upgradePackages[i];
-            const packageService = this._packageServiceFactory.GetInstance(upgradePackage.Manager);
+            const packageService = this._packageServiceFactory.GetInstance(upgradePackage.Manager, packageManagerOptions);
 
             await packageService.UpgradePackage(upgradePackage);
         }

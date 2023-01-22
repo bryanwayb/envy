@@ -8,11 +8,13 @@ import { IPackageService } from '../Interfaces/IPackageService';
 @Service(DI_ICommandHandler_SearchCommand)
 export default class SearchCommand extends BaseCommand implements ICommandHandler {
     async Execute(): Promise<number> {
+        const packageManagerOptions = this.GetPackageOptionsFromCommandLine();
+
         this._logger.LogTrace(`searching for packages`);
 
         const passedPackages = this.GetPassedPackages();
 
-        const packageServices = await this._packageServiceFactory.GetAllInstances();
+        const packageServices = await this._packageServiceFactory.GetAllInstances(packageManagerOptions);
 
         const spinners = this._consoleGUI.CreateSpinners();
         const resultsPromises = new Array<Promise<Array<PackageModel>>>();
@@ -27,7 +29,7 @@ export default class SearchCommand extends BaseCommand implements ICommandHandle
 
                 let servicesToSearch: IPackageService[] = packageServices;
                 if (passedPackage.HasManager()) {
-                    servicesToSearch = [await this._packageServiceFactory.GetInstance(passedPackage.Manager)];
+                    servicesToSearch = [await this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions)];
                 }
 
                 for (const i in servicesToSearch) {

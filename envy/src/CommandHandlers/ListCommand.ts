@@ -9,7 +9,9 @@ export default class ListCommand extends BaseCommand implements ICommandHandler 
     async Execute(): Promise<number> {
         this._logger.LogTrace(`getting installed packages`);
 
-        const packageServices = await this._packageServiceFactory.GetAllInstances();
+        const packageManagerOptions = this.GetPackageOptionsFromCommandLine();
+
+        const packageServices = await this._packageServiceFactory.GetAllInstances(packageManagerOptions);
 
         const foundPackages = new Array<PackageModel>();
 
@@ -28,7 +30,7 @@ export default class ListCommand extends BaseCommand implements ICommandHandler 
                 }
                 else {
                     this._logger.LogTrace(`package ${passedPackage} supplied manager ${passedPackage.Manager}`);
-                    const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager);
+                    const packageService = await this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
                     const packageServicePackages = await packageService.FilterInstalled(passedPackage);
                     foundPackages.push(...packageServicePackages);
                 }

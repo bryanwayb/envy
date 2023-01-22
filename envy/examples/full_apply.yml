@@ -18,7 +18,7 @@ targets:
     # -- WARNING -- Contexts are a planned experimental feature and may not be fully supported
 
     # Operations can be scopped to a context, by default the context is set to "system", like so:
-    # context: system
+    context: user
     # Contexts can be one of the following: system, user, directory (can also just be a path, like below)
     # context: ./context/path
 

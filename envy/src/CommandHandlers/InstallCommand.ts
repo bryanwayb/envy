@@ -3,10 +3,11 @@ import { ICommandHandler } from '../Interfaces/ICommandHandler';
 import { DI_ICommandHandler_InstallCommand } from '../../consts';
 import { PackageModel } from '../PackageServices/Models/PackageModel';
 import BaseCommand from './BaseCommand';
+import { PackageServiceOptions } from '../PackageServices/Models/PackageServiceOptions';
 
 @Service(DI_ICommandHandler_InstallCommand)
 export default class InstallCommand extends BaseCommand implements ICommandHandler {
-    private async GetPackagesToInstall(): Promise<PackageModel[]> {
+    private async GetPackagesToInstall(packageManagerOptions: PackageServiceOptions): Promise<PackageModel[]> {
         const results = new Array<PackageModel>();
 
         const passedPackages = this.GetPassedPackages();
@@ -18,7 +19,7 @@ export default class InstallCommand extends BaseCommand implements ICommandHandl
 
             await this.EnsurePackageHasManager(passedPackage);
 
-            const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager);
+            const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
             this._logger.LogTrace(`attempting to resolve ${passedPackage}`);
 
             const resolvedPackage = await packageService.GetPackageAvaiableForInstall(passedPackage);
@@ -46,11 +47,13 @@ export default class InstallCommand extends BaseCommand implements ICommandHandl
     }
 
     async Execute(): Promise<number> {
-        const packagesToInstall = await this.GetPackagesToInstall();
+        const packageManagerOptions = this.GetPackageOptionsFromCommandLine();
+
+        const packagesToInstall = await this.GetPackagesToInstall(packageManagerOptions);
 
         for (const i in packagesToInstall) {
             const packageToInstall = packagesToInstall[i];
-            this.AddRequiredPackageManager(packageToInstall.Manager);
+            this.AddRequiredPackageManager(packageToInstall.Manager, packageManagerOptions);
         }
 
         if (!await this.PreparePackageManagers()) {
@@ -59,7 +62,7 @@ export default class InstallCommand extends BaseCommand implements ICommandHandl
 
         for (const i in packagesToInstall) {
             const packageToInstall = packagesToInstall[i];
-            const packageService = this._packageServiceFactory.GetInstance(packageToInstall.Manager);
+            const packageService = this._packageServiceFactory.GetInstance(packageToInstall.Manager, packageManagerOptions);
 
             this._logger.LogTrace(`attempting to install ${packageToInstall}`);
             await packageService.InstallPackage(packageToInstall);

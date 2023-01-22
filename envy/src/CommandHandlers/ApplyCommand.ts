@@ -10,6 +10,7 @@ import UninstallOperation from '../Operations/UninstallOperation';
 import UpgradeOperation from '../Operations/UpgradeOperation';
 import { stat } from 'fs/promises';
 import ProcessService from '../Services/ProcessService';
+import { PackageServiceOptions } from '../PackageServices/Models/PackageServiceOptions';
 
 const DEFAULT_CONFIG_PATHS: string[] = [
     'nv.yml'
@@ -103,20 +104,20 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return applyConfigs;
     }
 
-    ConvertOperations(applyOperations: ApplyOperationModel[]): IOperation[] {
+    ConvertOperations(applyOperations: ApplyOperationModel[], packageManagerOptions: PackageServiceOptions): IOperation[] {
         const operations: IOperation[] = [];
 
         for (const o in applyOperations) {
             const applyPackage = applyOperations[o];
 
             if (applyPackage.install) {
-                this.AddRequiredPackageManager(applyPackage.install.Manager);
-                const installOperation = new UpgradeOperation(applyPackage.install);
+                this.AddRequiredPackageManager(applyPackage.install.Manager, packageManagerOptions);
+                const installOperation = new UpgradeOperation(applyPackage.install, packageManagerOptions);
                 operations.push(installOperation);
             }
             else if (applyPackage.uninstall) {
-                this.AddRequiredPackageManager(applyPackage.uninstall.Manager);
-                const uninstallOperation = new UninstallOperation(applyPackage.uninstall);
+                this.AddRequiredPackageManager(applyPackage.uninstall.Manager, packageManagerOptions);
+                const uninstallOperation = new UninstallOperation(applyPackage.uninstall, packageManagerOptions);
                 operations.push(uninstallOperation);
             }
         }
@@ -124,20 +125,27 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return operations;
     }
 
-    GetOperationsFromApplyTarget(target: ApplyTargetModel): IOperation[] {
+    GetOperationsFromApplyTarget(target: ApplyTargetModel, packageManagerOptions: PackageServiceOptions): IOperation[] {
         const operations: IOperation[] = [];
 
         if (target.CanTargetOS(this._processService.GetOS())
             && target.CanTargetDistro(this._processService.GetDistribution())) {
+
+            if (target.HasContext()) {
+                packageManagerOptions = new PackageServiceOptions();
+                packageManagerOptions.Context = target.GetContext();
+                packageManagerOptions.Directory = target.GetContextDirectory();
+            }
+
             if (target.operations) {
-                const targetOperations = this.ConvertOperations(target.operations);
+                const targetOperations = this.ConvertOperations(target.operations, packageManagerOptions);
                 operations.push(...targetOperations);
             }
 
             if (target.sections) {
                 for (const i in target.sections) {
                     const section = target.sections[i];
-                    const sectionOperations = this.GetOperationsFromApplySection(section);
+                    const sectionOperations = this.GetOperationsFromApplySection(section, packageManagerOptions);
                     operations.push(...sectionOperations);
                 }
             }
@@ -146,18 +154,18 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return operations;
     }
 
-    GetOperationsFromApplySection(section: ApplySectionModel): IOperation[] {
+    GetOperationsFromApplySection(section: ApplySectionModel, packageManagerOptions: PackageServiceOptions): IOperation[] {
         const operations: IOperation[] = [];
 
         if (section.operations) {
-            const sectionOperations = this.ConvertOperations(section.operations);
+            const sectionOperations = this.ConvertOperations(section.operations, packageManagerOptions);
             operations.push(...sectionOperations);
         }
 
         if (section.targets) {
             for (const i in section.targets) {
                 const target = section.targets[i];
-                const targetOperations = this.GetOperationsFromApplyTarget(target);
+                const targetOperations = this.GetOperationsFromApplyTarget(target, packageManagerOptions);
                 operations.push(...targetOperations);
             }
         }
@@ -165,7 +173,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         if (section.sections) {
             for (const i in section.sections) {
                 const subsection = section.sections[i];
-                const subsectionOperations = this.GetOperationsFromApplySection(subsection);
+                const subsectionOperations = this.GetOperationsFromApplySection(subsection, packageManagerOptions);
                 operations.push(...subsectionOperations);
             }
         }
@@ -179,7 +187,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         for (const i in applyConfigurations) {
             const applyConfiguration = applyConfigurations[i];
             if (applyConfiguration) {
-                const configurationOperations = this.GetOperationsFromApplySection(applyConfiguration);
+                const configurationOperations = this.GetOperationsFromApplySection(applyConfiguration, new PackageServiceOptions());
                 operations.push(...configurationOperations);
             }
         }
@@ -205,21 +213,21 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             const continueIndex = continueOperations.push(operation) - 1;
             this._logger.LogTrace(`apply ${operation.PackageModel}`);
 
-            const spinnerInstance = spinners.Add(`${operation.PackageModel}`);
+            const spinnerInstance = spinners.Add(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}`);
 
             operation.OnEvent('update', data => {
                 this._logger.LogTrace(`update ${operation.PackageModel}: ${data}`);
-                spinnerInstance.Update(`${operation.PackageModel}: ${data}`);
+                spinnerInstance.Update(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: ${data}`);
             });
 
             operation.OnEvent('success', data => {
                 this._logger.LogTrace(`success ${operation.PackageModel}: ${data}`);
-                spinnerInstance.Success(`${operation.PackageModel}: ${data}`);
+                spinnerInstance.Success(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: ${data}`);
             });
 
             operation.OnEvent('fail', data => {
                 this._logger.LogError(`fail ${operation.PackageModel}: ${data}`);
-                spinnerInstance.Fail(`${operation.PackageModel}: ${data}`);
+                spinnerInstance.Fail(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: ${data}`);
             });
 
             awaitPrepareOperations.push((async (): Promise<void> => {
@@ -228,7 +236,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
                 }
                 catch (ex) {
                     this._logger.LogTrace(`exception ${operation.PackageModel}: ${ex}`);
-                    spinnerInstance.Fail(`${operation.PackageModel}: failed to install`);
+                    spinnerInstance.Fail(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: failed to install`);
                     continueOperations.splice(continueIndex, 1);
                 }
             })());

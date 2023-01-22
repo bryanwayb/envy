@@ -7,6 +7,8 @@ import BaseCommand from './BaseCommand';
 @Service(DI_ICommandHandler_UninstallCommand)
 export default class UninstallCommand extends BaseCommand implements ICommandHandler {
     async Execute(): Promise<number> {
+        const packageManagerOptions = this.GetPackageOptionsFromCommandLine();
+
         this._logger.LogTrace(`preparing to uninstall packages`);
 
         const foundPackages = new Array<PackageModel>();
@@ -19,7 +21,7 @@ export default class UninstallCommand extends BaseCommand implements ICommandHan
 
                 await this.EnsurePackageHasManager(passedPackage);
 
-                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager);
+                const packageService = this._packageServiceFactory.GetInstance(passedPackage.Manager, packageManagerOptions);
 
                 const installedPackage = await packageService.GetInstalledPackage(passedPackage);
 
@@ -49,7 +51,7 @@ export default class UninstallCommand extends BaseCommand implements ICommandHan
         for (const i in foundPackages) {
             const foundPackage = foundPackages[i];
 
-            const packageService = this._packageServiceFactory.GetInstance(foundPackage.Manager);
+            const packageService = this._packageServiceFactory.GetInstance(foundPackage.Manager, packageManagerOptions);
 
             await packageService.UninstallPackage(foundPackage);
         }

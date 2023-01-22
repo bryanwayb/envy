@@ -8,7 +8,7 @@ export default class UpgradeOperation extends InstallOperation implements IOpera
     private _installedPackage: PackageModel = null;
 
     async Prepare(): Promise<void> {
-        this._packageService = this._packageServiceFactory.GetInstance(this.PackageModel.Manager);
+        this._packageService = this._packageServiceFactory.GetInstance(this.PackageModel.Manager, this.PackageManagerOptions);
 
         this.EmitEvent('update', `finding package`);
         this._logger.LogTrace(`checking if ${this.PackageModel} exists in package manager`);

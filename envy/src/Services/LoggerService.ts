@@ -53,8 +53,8 @@ export default class LoggerService {
         this.Log(LogLevel.Error, input);
     }
 
-    ScopeByType<T>(type: new () => T): LoggerService {
-        return new LoggerService(type.name);
+    ScopeByType<T>(type: new (..._) => T): LoggerService {
+        return this.ScopeByName(type.name);
     }
 
     ScopeByName(type: string): LoggerService {

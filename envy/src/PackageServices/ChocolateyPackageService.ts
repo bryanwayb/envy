@@ -7,6 +7,7 @@ import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
 import { ChocolateyConfigurationModel } from '../Configuration/Models/ConfigurationModel';
 import LoggerService from '../Services/LoggerService';
+import { PackageServiceOptions } from './Models/PackageServiceOptions';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService implements IPackageService {
@@ -15,6 +16,21 @@ export default class ChocolateyPackageService implements IPackageService {
     private _processService = Container.get(ProcessService);
     private _formatterService = Container.get<FormatterService>(FormatterService);
     private _logger = Container.get(LoggerService).ScopeByType(ChocolateyPackageService);
+
+    private _options = new PackageServiceOptions();
+
+    WithOptions(options: PackageServiceOptions): IPackageService {
+        if (options.Context !== this._options.Context) {
+            const instance = new ChocolateyPackageService();
+            instance.SetOptions(options);
+            return instance;
+        }
+        return this;
+    }
+
+    protected SetOptions(options: PackageServiceOptions = new PackageServiceOptions()) {
+        this._options = options;
+    }
 
     private async GetConfiguration(): Promise<ChocolateyConfigurationModel> {
         const configuraitonService = Container.get<ConfigurationService>(DI_IConfiguration_Configuration)
