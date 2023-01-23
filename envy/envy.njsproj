@@ -90,6 +90,7 @@
     <TypeScriptCompile Include="src\Operations\UpgradeOperation.ts" />
     <TypeScriptCompile Include="src\Operations\InstallOperation.ts" />
     <TypeScriptCompile Include="src\Operations\UninstallOperation.ts" />
+    <TypeScriptCompile Include="src\PackageServices\BasePackageService.ts" />
     <TypeScriptCompile Include="src\PackageServices\Models\PackageModel.ts" />
     <TypeScriptCompile Include="src\PackageServices\PackageServiceFactory.ts" />
     <TypeScriptCompile Include="src\Services\CommandLineService.ts" />

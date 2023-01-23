@@ -85,7 +85,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             const applyConfigPath = applyConfigPaths[i];
             this._logger.LogTrace(`loading apply config: ${applyConfigPath}`);
 
-            const applyConfig = await this._yamlSerializationService.LoadYamlFromFile(ApplyRootModel, applyConfigPath);
+            const applyConfig = await this._yamlSerializationService.LoadStructuredYamlFromFile(ApplyRootModel, applyConfigPath);
             this._logger.LogTrace(`config file loaded as: ${this._logger.Serialize(applyConfig)}`);
 
             applyConfigs.push(applyConfig);
@@ -213,21 +213,21 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             const continueIndex = continueOperations.push(operation) - 1;
             this._logger.LogTrace(`apply ${operation.PackageModel}`);
 
-            const spinnerInstance = spinners.Add(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}`);
+            const spinnerInstance = spinners.Add(`[${operation.PackageManagerOptions.GetContextAsString()}] ${operation.PackageModel}`);
 
             operation.OnEvent('update', data => {
                 this._logger.LogTrace(`update ${operation.PackageModel}: ${data}`);
-                spinnerInstance.Update(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: ${data}`);
+                spinnerInstance.Update(`[${operation.PackageManagerOptions.GetContextAsString()}] ${operation.PackageModel}: ${data}`);
             });
 
             operation.OnEvent('success', data => {
                 this._logger.LogTrace(`success ${operation.PackageModel}: ${data}`);
-                spinnerInstance.Success(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: ${data}`);
+                spinnerInstance.Success(`[${operation.PackageManagerOptions.GetContextAsString()}] ${operation.PackageModel}: ${data}`);
             });
 
             operation.OnEvent('fail', data => {
                 this._logger.LogError(`fail ${operation.PackageModel}: ${data}`);
-                spinnerInstance.Fail(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: ${data}`);
+                spinnerInstance.Fail(`[${operation.PackageManagerOptions.GetContextAsString()}] ${operation.PackageModel}: ${data}`);
             });
 
             awaitPrepareOperations.push((async (): Promise<void> => {
@@ -236,7 +236,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
                 }
                 catch (ex) {
                     this._logger.LogTrace(`exception ${operation.PackageModel}: ${ex}`);
-                    spinnerInstance.Fail(`[${operation.PackageManagerOptions.toString()}] ${operation.PackageModel}: failed to install`);
+                    spinnerInstance.Fail(`[${operation.PackageManagerOptions.GetContextAsString()}] ${operation.PackageModel}: failed to install`);
                     continueOperations.splice(continueIndex, 1);
                 }
             })());

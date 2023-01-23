@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import LoggerService, { LogLevel } from './LoggerService';
 import CommandLineService from './CommandLineService';
 import { createInterface } from 'readline';
-import { red as textRed } from 'colors';
+import { red as textRed, yellow as textYellow } from 'colors';
 
 export interface IConsoleSpinnerInstance {
     Update(text: string): void;
@@ -110,6 +110,10 @@ export default class ConsoleGUI {
 
     Output(message: string): void {
         console.log(message);
+    }
+
+    DisplayWarning(message: string): void {
+        console.warn(textYellow(message));
     }
 
     DisplayError(message: string): void {

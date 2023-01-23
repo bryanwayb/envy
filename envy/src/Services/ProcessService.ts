@@ -2,6 +2,7 @@ import { exec, ExecException } from 'child_process';
 import { lstat } from 'fs/promises';
 import { platform } from 'os';
 import { join } from 'path';
+import { userInfo } from 'os';
 import Container, { Service } from 'typedi';
 import LoggerService, { LogLevel } from './LoggerService';
 
@@ -9,6 +10,10 @@ export enum EnumOperatingSystem {
     Windows,
     Linux
 };
+
+export interface ProcessStartOptions {
+    Environment: {[key: string]: string}
+}
 
 @Service()
 export default class ProcessService {
@@ -28,6 +33,10 @@ export default class ProcessService {
     GetDistribution(): string {
         // TODO: Get OS distro
         return '';
+    }
+
+    GetUserHomeDirectory(): string {
+        return userInfo().homedir;
     }
 
     async IsAdmin(): Promise<boolean> {
@@ -52,6 +61,10 @@ export default class ProcessService {
         }
 
         return this._isAdmin;
+    }
+
+    GetEnvironment(): { [key: string]: string } {
+        return process.env;
     }
 
     async FindInPath(executable: string): Promise<string> {
@@ -100,10 +113,12 @@ export default class ProcessService {
         return await this.Execute(`"${powerShellExecutable}" -ExecutionPolicy Bypass -NoLogo -c ${command}`);
     }
 
-    Execute(command: string, interactiveHandler?: (data: string) => string): Promise<string> {
+    Execute(command: string, options?: ProcessStartOptions, interactiveHandler?: (data: string) => string): Promise<string> {
         return new Promise((resolve, reject) => {
             this._logger.LogTrace(`executing command: ${command}`);
-            const childProcess = exec(command, (error: ExecException, stdout: string, stderr: string) => {
+            const childProcess = exec(command, {
+                    env: options ? options.Environment : null
+                }, (error: ExecException, stdout: string, stderr: string) => {
                 this._logger.LogTrace(`command results: ${command}
 Error: ${error}
 stderr: ${stderr}

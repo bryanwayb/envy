@@ -21,7 +21,7 @@ export class PackageServiceOptions {
         return true;
     }
 
-    public toString() {
+    public GetContextAsString() {
         if (this.Context === PackageContextEnum.System) {
             return 'system';
         }

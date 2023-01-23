@@ -1,6 +1,6 @@
 import Container, { Service } from 'typedi';
-import { load, Type as YamlType, DEFAULT_SCHEMA, Schema } from 'js-yaml';
-import { readFile } from 'fs/promises';
+import { load, dump, Type as YamlType, DEFAULT_SCHEMA, Schema } from 'js-yaml';
+import { readFile, writeFile } from 'fs/promises';
 import { cwd as getCurrentWorkingDirectory } from 'process';
 import { resolve, dirname } from 'path';
 import LoggerService from './LoggerService';
@@ -10,7 +10,7 @@ import { readFileSync } from 'fs';
 export default class YamlSerializationService {
     protected readonly _logger = Container.get(LoggerService).ScopeByName(this.constructor.name);
 
-    LoadYaml<T>(type: { new(data: any): T; }, input: string, referenceFilePath: string = null): T {
+    LoadStructuredYaml<T>(type: { new(data: any): T; }, input: string, referenceFilePath: string = null): T {
         this._logger.LogTrace(`parsing YAML: ${input}`);
 
         let configurationSchema: Schema = null;
@@ -59,15 +59,42 @@ export default class YamlSerializationService {
         return new type(data);
     }
 
-    async LoadYamlFromFile<T>(type: { new(data: any): T; }, file: string): Promise<T> {
-        const currentDirectory = getCurrentWorkingDirectory();
-        const resolvedFilePath = resolve(currentDirectory, file);
+    async LoadStructuredYamlFromFile<T>(type: { new(data: any): T; }, file: string): Promise<T> {
+        const resolvedFilePath = this.resolveFilePath(file);
 
         this._logger.LogTrace(`attempting to load YAML file at ${resolvedFilePath}`);
 
         const dataBuffer = await readFile(resolvedFilePath, 'utf8');
         const data = dataBuffer.toString();
 
-        return this.LoadYaml<T>(type, data, resolvedFilePath);
+        return this.LoadStructuredYaml<T>(type, data, resolvedFilePath);
+    }
+
+    async LoadYamlFromFile<T>(file: string): Promise<T> {
+        const resolvedFilePath = this.resolveFilePath(file);
+
+        this._logger.LogTrace(`attempting to load YAML file at ${resolvedFilePath}`);
+
+        const dataBuffer = await readFile(resolvedFilePath, 'utf8');
+
+        const data = load(dataBuffer.toString());
+
+        return data as T;
+    }
+
+    async WriteYamlToFile<T>(data: any, file: string): Promise<void> {
+        const resolvedFilePath = this.resolveFilePath(file);
+
+        this._logger.LogTrace(`attempting to write YAML file at ${resolvedFilePath}`);
+
+        const yamlData = dump(data);
+
+        await writeFile(resolvedFilePath, yamlData);
+    }
+
+    private resolveFilePath(file: string) {
+        const currentDirectory = getCurrentWorkingDirectory();
+        const resolvedFilePath = resolve(currentDirectory, file);
+        return resolvedFilePath;
     }
 };

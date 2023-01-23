@@ -6,18 +6,15 @@ import { PackageModel } from './Models/PackageModel';
 import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
 import { ChocolateyConfigurationModel } from '../Configuration/Models/ConfigurationModel';
-import LoggerService from '../Services/LoggerService';
-import { PackageServiceOptions } from './Models/PackageServiceOptions';
+import { PackageContextEnum, PackageServiceOptions } from './Models/PackageServiceOptions';
+import { BasePackageService } from './BasePackageService';
+import { join as joinPath } from 'path';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
-export default class ChocolateyPackageService implements IPackageService {
+export default class ChocolateyPackageService extends BasePackageService implements IPackageService {
     ServiceIdentifier = 'choco';
 
-    private _processService = Container.get(ProcessService);
     private _formatterService = Container.get<FormatterService>(FormatterService);
-    private _logger = Container.get(LoggerService).ScopeByType(ChocolateyPackageService);
-
-    private _options = new PackageServiceOptions();
 
     public async WithOptions(options: PackageServiceOptions): Promise<IPackageService> {
         if (options.Context !== this._options.Context) {
@@ -27,14 +24,18 @@ export default class ChocolateyPackageService implements IPackageService {
         }
 
         if (!await this._processService.IsAdmin()) {
-            throw new Error('Using Chocolatey for global use requires admin access');
+            throw new Error('Using Chocolatey for system use requires admin access');
         }
 
         return this;
     }
 
-    protected SetOptions(options: PackageServiceOptions = new PackageServiceOptions()) {
-        this._options = options;
+    get OverrideInstallPath(): string {
+        if (this._options.Context === PackageContextEnum.System) {
+            return null;
+        }
+
+        return joinPath('.envy', 'chocolatey');
     }
 
     private async GetConfiguration(): Promise<ChocolateyConfigurationModel> {
@@ -103,7 +104,9 @@ export default class ChocolateyPackageService implements IPackageService {
             ...data
         });
 
-        return await this._processService.Execute(commandLine, data => {
+        return await this._processService.Execute(commandLine, {
+            Environment: await this.GetEnvironment()
+        }, data => {
             if (data.indexOf('[A]ll') !== -1) {
                 return 'A\n';
             }
