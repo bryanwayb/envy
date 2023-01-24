@@ -67,18 +67,25 @@ export default class ProcessService {
         return process.env;
     }
 
-    async FindInPath(executable: string): Promise<string> {
+    GetPathArray(): string[] {
         const os = this.GetOS();
-
-        let paths = null;
-        let pathExtensions = null;
-
         if (os === EnumOperatingSystem.Windows) {
-            paths = process.env.PATH.split(';');
+            return process.env.PATH.split(';');
+        }
+        return process.env.PATH.split(':');
+    }
+
+    async FindInPath(executable: string, paths: string[] = null): Promise<string> {
+        if (paths === null) {
+            paths = this.GetPathArray();
+        }
+
+        const os = this.GetOS();
+        let pathExtensions = null;
+        if (os === EnumOperatingSystem.Windows) {
             pathExtensions = (process.env.PATHEXT || '').split(';');
         }
         else {
-            paths = process.env.PATH.split(':');
             pathExtensions = [];
         }
 

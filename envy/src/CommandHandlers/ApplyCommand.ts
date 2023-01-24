@@ -247,7 +247,8 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         if (continueOperations.length != operations.length) {
             // TODO: Not all opeartions are successful
             // Allow switch to continue
-            console.log('error, not all apply operation preperations are successful');
+            spinners.Stop();
+            this._consoleGUI.DisplayError('\nNot all apply operation preperations are successful\n');
             return 1;
         }
 

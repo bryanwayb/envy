@@ -1,6 +1,6 @@
 import Container, { Service } from 'typedi';
-import { load, dump, Type as YamlType, DEFAULT_SCHEMA, Schema } from 'js-yaml';
-import { readFile, writeFile } from 'fs/promises';
+import { load, Type as YamlType, DEFAULT_SCHEMA, Schema } from 'js-yaml';
+import { readFile } from 'fs/promises';
 import { cwd as getCurrentWorkingDirectory } from 'process';
 import { resolve, dirname } from 'path';
 import LoggerService from './LoggerService';
@@ -68,28 +68,6 @@ export default class YamlSerializationService {
         const data = dataBuffer.toString();
 
         return this.LoadStructuredYaml<T>(type, data, resolvedFilePath);
-    }
-
-    async LoadYamlFromFile<T>(file: string): Promise<T> {
-        const resolvedFilePath = this.resolveFilePath(file);
-
-        this._logger.LogTrace(`attempting to load YAML file at ${resolvedFilePath}`);
-
-        const dataBuffer = await readFile(resolvedFilePath, 'utf8');
-
-        const data = load(dataBuffer.toString());
-
-        return data as T;
-    }
-
-    async WriteYamlToFile<T>(data: any, file: string): Promise<void> {
-        const resolvedFilePath = this.resolveFilePath(file);
-
-        this._logger.LogTrace(`attempting to write YAML file at ${resolvedFilePath}`);
-
-        const yamlData = dump(data);
-
-        await writeFile(resolvedFilePath, yamlData);
     }
 
     private resolveFilePath(file: string) {

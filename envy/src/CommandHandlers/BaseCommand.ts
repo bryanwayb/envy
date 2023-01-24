@@ -123,13 +123,15 @@ export default abstract class BaseCommand {
             }
         }
 
+        // TODO: Auto confirm installation when install context is a local directory (not a absoulte path or above current pwd)
+
         if (missingManagers.length + installableManagers.length > 0) {
             if (missingManagers.length > 0) {
                 this._consoleGUI.Output('The following package managers are missing but cannot be auto installed');
 
                 for (const i in missingManagers) {
                     const missingManager = missingManagers[i];
-                    this._consoleGUI.Output(`\t${missingManager}`);
+                    this._consoleGUI.Output(`\t[${missingManager.Options.GetContextAsString()}] ${missingManager.PackageManager}`);
                 }
 
                 this._consoleGUI.Output('');
@@ -140,7 +142,7 @@ export default abstract class BaseCommand {
 
                 for (const i in installableManagers) {
                     const installableManager = installableManagers[i];
-                    this._consoleGUI.Output(`\t${installableManager}`);
+                    this._consoleGUI.Output(`\t[${installableManager.Options.GetContextAsString()}] ${installableManager.PackageManager}`);
                 }
 
                 this._consoleGUI.Output('');

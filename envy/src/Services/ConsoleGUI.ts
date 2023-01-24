@@ -15,6 +15,7 @@ export interface IConsoleSpinnerInstance {
 
 export interface IConsoleSpinners {
     Add(text: string): IConsoleSpinnerInstance;
+    Stop(): void;
 }
 
 export class ConsoleSpinnerInstance implements IConsoleSpinnerInstance {
@@ -76,6 +77,10 @@ export class ConsoleSpinners implements IConsoleSpinners {
         });
         return new ConsoleSpinnerInstance(this._spinnies, id);
     }
+
+    Stop(): void {
+        this._spinnies.stopAll('stopped');
+    }
 }
 
 export class VerboseConsoleSpinners implements IConsoleSpinners {
@@ -88,6 +93,10 @@ export class VerboseConsoleSpinners implements IConsoleSpinners {
 
         return new VerboseConsoleSpinnerInstance(id);
     }
+
+    Stop(): void {
+        this._logger.LogTrace(`stopping spinners`);
+    }
 }
 
 @Service()
@@ -96,7 +105,9 @@ export default class ConsoleGUI {
     protected readonly _commandLineService = Container.get(CommandLineService);
 
     PrintConsoleTable(records: Array<any>): void {
-        printTable(records);
+        if (records.length > 0) {
+            printTable(records);
+        }
     }
 
     CreateSpinners(): IConsoleSpinners {

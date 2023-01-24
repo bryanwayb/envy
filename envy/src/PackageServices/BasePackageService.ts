@@ -3,7 +3,6 @@ import { IPackageService } from "../Interfaces/IPackageService";
 import LoggerService from "../Services/LoggerService";
 import { PackageModel } from "./Models/PackageModel";
 import { PackageServiceOptions } from "./Models/PackageServiceOptions";
-import { resolve as resolvePath } from 'path';
 import ProcessService from "../Services/ProcessService";
 import YamlSerializationService from "../Services/YamlSerializationService";
 import ConsoleGUI from "../Services/ConsoleGUI";
@@ -17,45 +16,6 @@ export abstract class BasePackageService implements IPackageService {
     protected _options = new PackageServiceOptions();
     protected SetOptions(options: PackageServiceOptions = new PackageServiceOptions()) {
         this._options = options;
-    }
-
-    abstract get OverrideInstallPath(): string;
-
-    protected GetEnvironmentFilePath(): string {
-        if (this.OverrideInstallPath) {
-            const userDirectory = this._processService.GetUserHomeDirectory();
-            const envFilePath = resolvePath(userDirectory, this.OverrideInstallPath, '.env.yml');
-            return envFilePath;
-        }
-
-        return null;
-    }
-
-    protected async GetEnvironment(): Promise<{ [key: string]: string }> {
-        this._logger.LogTrace(`setting environment variables for ${this.ServiceIdentifier} with context: ${this._options.GetContextAsString()}`);
-
-        const ret: { [key: string]: string } = {};
-        const processEnv = this._processService.GetEnvironment();
-        //Object.assign(ret, processEnv);
-
-        const envFilePath = this.GetEnvironmentFilePath();
-        if (envFilePath) {
-            this._logger.LogTrace(`loading environment file: ${envFilePath}`);
-            ret.PATH = ''; // TODO: Will likely need to modify this to allow some of the existing system path to stay
-            try {
-                const loadedEnv = await this._yamlSerializationService.LoadYamlFromFile<{ [key: string]: string }>(envFilePath);
-                Object.assign(ret, loadedEnv);
-            }
-            catch (ex) {
-                this._consoleGUI.DisplayWarning(`Unable to load env file "${envFilePath}"`);
-                this._logger.LogError(`Error while attempting to load env file: ${ex}`);
-            }
-        }
-        else {
-            this._logger.LogTrace(`using system environment`);
-        }
-
-        return ret;
     }
 
     ServiceIdentifier: string = 'not implemented';

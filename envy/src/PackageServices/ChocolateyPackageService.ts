@@ -1,7 +1,7 @@
 import Container, { Service } from 'typedi';
 import { IPackageService } from '../Interfaces/IPackageService';
 import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageService } from '../../consts';
-import ProcessService, { EnumOperatingSystem } from '../Services/ProcessService';
+import { EnumOperatingSystem } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
 import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
@@ -9,6 +9,26 @@ import { ChocolateyConfigurationModel } from '../Configuration/Models/Configurat
 import { PackageContextEnum, PackageServiceOptions } from './Models/PackageServiceOptions';
 import { BasePackageService } from './BasePackageService';
 import { join as joinPath } from 'path';
+
+class ProcessEnvironmentOverride {
+    public readonly InstallDirectory: string;
+    private readonly _environment: { [key: string]: string };
+
+    constructor(installDirectory: string, environment: { [key: string]: string }) {
+        this.InstallDirectory = installDirectory;
+        this._environment = environment;
+    }
+
+    public GetEnvironment(): { [key: string]: string } {
+        return Object.assign({}, {
+            PATH: this.InstallDirectory
+        }, this._environment);
+    }
+
+    public GetPathArray(): string[] {
+        return [this.InstallDirectory];
+    }
+}
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService extends BasePackageService implements IPackageService {
@@ -30,12 +50,22 @@ export default class ChocolateyPackageService extends BasePackageService impleme
         return this;
     }
 
-    get OverrideInstallPath(): string {
-        if (this._options.Context === PackageContextEnum.System) {
-            return null;
+    private _processEnvironmentOverride: ProcessEnvironmentOverride = undefined;
+    private GetProcessEnvironmentOverride(): ProcessEnvironmentOverride {
+        if (this._processEnvironmentOverride === undefined) {
+            if (this._options.Context !== PackageContextEnum.System) {
+                this._processEnvironmentOverride = new ProcessEnvironmentOverride(joinPath('.nv', 'chocolatey'), {});
+            }
+            else {
+                this._processEnvironmentOverride = null;
+            }
         }
 
-        return joinPath('.envy', 'chocolatey');
+        if (this._processEnvironmentOverride) {
+            this._logger.LogTrace(`configuring process environment override as: ${this._logger.Serialize(this._processEnvironmentOverride)}`);
+        }
+
+        return this._processEnvironmentOverride;
     }
 
     private async GetConfiguration(): Promise<ChocolateyConfigurationModel> {
@@ -104,8 +134,10 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             ...data
         });
 
+        const processEnvironmentOverride = this.GetProcessEnvironmentOverride();
+
         return await this._processService.Execute(commandLine, {
-            Environment: await this.GetEnvironment()
+            Environment: processEnvironmentOverride ? processEnvironmentOverride.GetEnvironment() : null
         }, data => {
             if (data.indexOf('[A]ll') !== -1) {
                 return 'A\n';
@@ -224,9 +256,20 @@ export default class ChocolateyPackageService extends BasePackageService impleme
 
     async IsServiceAvailable(): Promise<boolean> {
         const config = await this.GetConfiguration();
+
+        const processEnvironmentOverride = this.GetProcessEnvironmentOverride();
+        let searchPaths: string[];
+
+        if (processEnvironmentOverride) {
+            searchPaths = processEnvironmentOverride.GetPathArray();
+        }
+        else {
+            searchPaths = this._processService.GetPathArray();
+        }
+
         return config.enabled
             && this._processService.GetOS() === EnumOperatingSystem.Windows
-            && await this._processService.FindInPath(config.rootCommand) !== null;
+            && await this._processService.FindInPath(config.rootCommand, searchPaths) !== null;
     }
 
     async IsServiceInstallable(): Promise<boolean> {
