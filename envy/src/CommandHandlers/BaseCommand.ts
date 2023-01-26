@@ -100,32 +100,39 @@ export default abstract class BaseCommand {
 
     protected async PreparePackageManagers(): Promise<boolean> {
         const packageManagersWithOptions = this._requiredPackageManagers.GetItems();
-        this._logger.LogTrace(`command requires the following package managers: ${packageManagersWithOptions.join(', ')}`);
+        this._logger.LogTrace(`command requires the following package managers: ${packageManagersWithOptions.map(m => m.PackageManager).join(', ')}`);
 
         const missingManagers: PackageManagerWithOption[] = [];
         const installableManagers: PackageManagerWithOption[] = [];
+        const failedManagers: PackageManagerWithOption[] = [];
 
         for (const i in packageManagersWithOptions) {
             const packageManagerWithOption = packageManagersWithOptions[i];
-            this._logger.LogTrace(`checking if package manager ${packageManagerWithOption} is available`);
+            this._logger.LogTrace(`checking if package manager ${packageManagerWithOption.PackageManager} is available`);
 
-            const packageManagerInstance = await this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
-            if (!await packageManagerInstance.IsServiceAvailable()) {
-                this._logger.LogTrace(`package manager ${packageManagerWithOption} is not available`);
-                if (await packageManagerInstance.IsServiceInstallable()) {
-                    this._logger.LogTrace(`package manager ${packageManagerWithOption} is installable`);
-                    installableManagers.push(packageManagerWithOption);
+            try {
+                const packageManagerInstance = await this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
+                if (!await packageManagerInstance.IsServiceAvailable()) {
+                    this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} is not available`);
+                    if (await packageManagerInstance.IsServiceInstallable()) {
+                        this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} is installable`);
+                        installableManagers.push(packageManagerWithOption);
+                    }
+                    else {
+                        this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} is not installable`);
+                        missingManagers.push(packageManagerWithOption);
+                    }
                 }
-                else {
-                    this._logger.LogTrace(`package manager ${packageManagerWithOption} is not installable`);
-                    missingManagers.push(packageManagerWithOption);
-                }
+            }
+            catch (ex) {
+                this._logger.LogError(`package manager ${packageManagerWithOption.PackageManager} failed with the following error: ${ex}`);
+                failedManagers.push(packageManagerWithOption);
             }
         }
 
         // TODO: Auto confirm installation when install context is a local directory (not a absoulte path or above current pwd)
 
-        if (missingManagers.length + installableManagers.length > 0) {
+        if (missingManagers.length + installableManagers.length + failedManagers.length > 0) {
             if (missingManagers.length > 0) {
                 this._consoleGUI.Output('The following package managers are missing but cannot be auto installed');
 
@@ -146,6 +153,20 @@ export default abstract class BaseCommand {
                 }
 
                 this._consoleGUI.Output('');
+            }
+
+            if (failedManagers.length > 0) {
+                this._consoleGUI.DisplayError('The following package managers failed to resolve');
+                this._consoleGUI.DisplayError('This is likely due to these being unsupported by Envy');
+
+                for (const i in failedManagers) {
+                    const failedManager = failedManagers[i];
+                    this._consoleGUI.Output(`\t[${failedManager.Options.GetContextAsString()}] ${failedManager.PackageManager}`);
+                }
+
+                this._consoleGUI.Output('');
+
+                return false;
             }
 
             if (missingManagers.length > 0) {

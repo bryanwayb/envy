@@ -3,19 +3,33 @@ import { IPackageService } from "../Interfaces/IPackageService";
 import LoggerService from "../Services/LoggerService";
 import { PackageModel } from "./Models/PackageModel";
 import { PackageServiceOptions } from "./Models/PackageServiceOptions";
-import ProcessService from "../Services/ProcessService";
+import ProcessService, { ProcessServiceEnvironment } from "../Services/ProcessService";
 import YamlSerializationService from "../Services/YamlSerializationService";
 import ConsoleGUI from "../Services/ConsoleGUI";
 
 export abstract class BasePackageService implements IPackageService {
     protected readonly _logger = Container.get(LoggerService).ScopeByName(this.constructor.name);
-    protected readonly _processService = Container.get(ProcessService);
     protected readonly _yamlSerializationService = Container.get(YamlSerializationService);
     protected readonly _consoleGUI = Container.get(ConsoleGUI);
 
     protected _options = new PackageServiceOptions();
     protected SetOptions(options: PackageServiceOptions = new PackageServiceOptions()) {
         this._options = options;
+    }
+
+    protected abstract GetProcessServiceEnvironment(): ProcessServiceEnvironment;
+
+    private _processService: ProcessService = null;
+    get ProcessService(): ProcessService {
+        if (this._processService === null) {
+            this._processService = Container.get(ProcessService);
+
+            const processServiceEnvironment = this.GetProcessServiceEnvironment();
+            if (processServiceEnvironment) {
+                this._processService = this._processService.WithEnvironment(processServiceEnvironment);
+            }
+        }
+        return this._processService;
     }
 
     ServiceIdentifier: string = 'not implemented';

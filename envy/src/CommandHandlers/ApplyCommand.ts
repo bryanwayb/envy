@@ -86,7 +86,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
             this._logger.LogTrace(`loading apply config: ${applyConfigPath}`);
 
             const applyConfig = await this._yamlSerializationService.LoadStructuredYamlFromFile(ApplyRootModel, applyConfigPath);
-            this._logger.LogTrace(`config file loaded as: ${this._logger.Serialize(applyConfig)}`);
+            this._logger.LogTrace(`apply config file loaded as: ${this._logger.Serialize(applyConfig)}`);
 
             applyConfigs.push(applyConfig);
         }

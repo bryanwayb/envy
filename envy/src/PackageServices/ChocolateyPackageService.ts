@@ -1,34 +1,13 @@
 import Container, { Service } from 'typedi';
 import { IPackageService } from '../Interfaces/IPackageService';
 import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageService } from '../../consts';
-import { EnumOperatingSystem } from '../Services/ProcessService';
+import { EnumOperatingSystem, ProcessServiceEnvironment } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
 import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
 import { ChocolateyConfigurationModel } from '../Configuration/Models/ConfigurationModel';
 import { PackageContextEnum, PackageServiceOptions } from './Models/PackageServiceOptions';
 import { BasePackageService } from './BasePackageService';
-import { join as joinPath } from 'path';
-
-class ProcessEnvironmentOverride {
-    public readonly InstallDirectory: string;
-    private readonly _environment: { [key: string]: string };
-
-    constructor(installDirectory: string, environment: { [key: string]: string }) {
-        this.InstallDirectory = installDirectory;
-        this._environment = environment;
-    }
-
-    public GetEnvironment(): { [key: string]: string } {
-        return Object.assign({}, {
-            PATH: this.InstallDirectory
-        }, this._environment);
-    }
-
-    public GetPathArray(): string[] {
-        return [this.InstallDirectory];
-    }
-}
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService extends BasePackageService implements IPackageService {
@@ -43,29 +22,31 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             return instance;
         }
 
-        if (!await this._processService.IsAdmin()) {
+        if (!await this.ProcessService.IsAdmin()) {
             throw new Error('Using Chocolatey for system use requires admin access');
         }
 
         return this;
     }
 
-    private _processEnvironmentOverride: ProcessEnvironmentOverride = undefined;
-    private GetProcessEnvironmentOverride(): ProcessEnvironmentOverride {
-        if (this._processEnvironmentOverride === undefined) {
-            if (this._options.Context !== PackageContextEnum.System) {
-                this._processEnvironmentOverride = new ProcessEnvironmentOverride(joinPath('.nv', 'chocolatey'), {});
+    protected GetProcessServiceEnvironment(): ProcessServiceEnvironment {
+        if (this._options.Context !== PackageContextEnum.System) {
+            const processServiceEnvironment = new ProcessServiceEnvironment();
+
+            if (this._options.Context === PackageContextEnum.User) {
+                processServiceEnvironment.SetEnvironmentVariable('path', `${processServiceEnvironment.UserHome}/.nv/choco`);
+            }
+            else if (this._options.Context === PackageContextEnum.Directory) {
+                processServiceEnvironment.SetEnvironmentVariable('path', `${this._options.Directory}/.nv/choco`);
             }
             else {
-                this._processEnvironmentOverride = null;
+                throw new Error(`Context ${this._options.Context} is not supported for choco`);
             }
+
+            return processServiceEnvironment;
         }
 
-        if (this._processEnvironmentOverride) {
-            this._logger.LogTrace(`configuring process environment override as: ${this._logger.Serialize(this._processEnvironmentOverride)}`);
-        }
-
-        return this._processEnvironmentOverride;
+        return null;
     }
 
     private async GetConfiguration(): Promise<ChocolateyConfigurationModel> {
@@ -134,11 +115,7 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             ...data
         });
 
-        const processEnvironmentOverride = this.GetProcessEnvironmentOverride();
-
-        return await this._processService.Execute(commandLine, {
-            Environment: processEnvironmentOverride ? processEnvironmentOverride.GetEnvironment() : null
-        }, data => {
+        return await this.ProcessService.Execute(commandLine, data => {
             if (data.indexOf('[A]ll') !== -1) {
                 return 'A\n';
             }
@@ -256,26 +233,15 @@ export default class ChocolateyPackageService extends BasePackageService impleme
 
     async IsServiceAvailable(): Promise<boolean> {
         const config = await this.GetConfiguration();
-
-        const processEnvironmentOverride = this.GetProcessEnvironmentOverride();
-        let searchPaths: string[];
-
-        if (processEnvironmentOverride) {
-            searchPaths = processEnvironmentOverride.GetPathArray();
-        }
-        else {
-            searchPaths = this._processService.GetPathArray();
-        }
-
         return config.enabled
-            && this._processService.GetOS() === EnumOperatingSystem.Windows
-            && await this._processService.FindInPath(config.rootCommand, searchPaths) !== null;
+            && this.ProcessService.GetOS() === EnumOperatingSystem.Windows
+            && await this.ProcessService.FindInPath(config.rootCommand) !== null;
     }
 
     async IsServiceInstallable(): Promise<boolean> {
         const config = await this.GetConfiguration();
         return config.enabled
-            && this._processService.GetOS() === EnumOperatingSystem.Windows;
+            && this.ProcessService.GetOS() === EnumOperatingSystem.Windows;
     }
 
     async InstallService(): Promise<boolean> {
@@ -283,7 +249,7 @@ export default class ChocolateyPackageService extends BasePackageService impleme
         this._logger.LogTrace(`installing choco`);
         if (!config.dryRun) {
             try {
-                await this._processService.ExecutePowerShell(`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`);
+                await this.ProcessService.ExecutePowerShell(`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`);
 
                 // TODO: Check the output to see if installation was successful
             }
