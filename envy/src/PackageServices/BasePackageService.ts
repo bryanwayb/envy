@@ -17,14 +17,14 @@ export abstract class BasePackageService implements IPackageService {
         this._options = options;
     }
 
-    protected abstract GetProcessServiceEnvironment(): ProcessServiceEnvironment;
+    protected abstract GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment>;
 
     private _processService: ProcessService = null;
-    get ProcessService(): ProcessService {
+    async GetProcessService(): Promise<ProcessService> {
         if (this._processService === null) {
             this._processService = Container.get(ProcessService);
 
-            const processServiceEnvironment = this.GetProcessServiceEnvironment();
+            const processServiceEnvironment = await this.GetProcessServiceEnvironment();
             if (processServiceEnvironment) {
                 this._processService = this._processService.WithEnvironment(processServiceEnvironment);
             }

@@ -59,6 +59,95 @@ export class ProcessServiceEnvironment {
         this.Environment[envKey] = value;
     }
 
+    GetPath(): string[] {
+        if (this.OS === EnumOperatingSystem.Windows) {
+            return this.GetEnvironmentVariable('path').split(';');
+        }
+        return this.GetEnvironmentVariable('path').split(':');
+    }
+
+    SetPath(path: string[]): void {
+        if (this.OS === EnumOperatingSystem.Windows) {
+            this.SetEnvironmentVariable('path', path.join(';'));
+        }
+        else {
+            this.SetEnvironmentVariable('path', path.join(':'));
+        }
+    }
+
+    RemovePath(path: string[]): void {
+        const currentPath = this.GetPath();
+
+        for (const i in path) {
+            const pathToRemove = path[i];
+
+            for (let o = 0; o < currentPath.length; o++) {
+                const currentPathToCheck = currentPath[o];
+
+                if (pathToRemove.toLowerCase().trim() === currentPathToCheck.toLowerCase().trim()) {
+                    currentPath.splice(o, 1);
+                    break;
+                }
+            }
+        }
+
+        this.SetPath(currentPath);
+    }
+
+    AddPath(path: string[]): void {
+        const currentPath = this.GetPath();
+
+        for (const i in path) {
+            const pathToAdd = path[i];
+            currentPath.push(pathToAdd);
+        }
+
+        this.SetPath(currentPath);
+    }
+
+    async FindAllInPath(executable: string): Promise<string[]> {
+        const paths = this.GetPath();
+        const results: string[] = [];
+
+        let pathExtensions = null;
+        if (this.OS === EnumOperatingSystem.Windows) {
+            pathExtensions = (this.GetEnvironmentVariable('pathext') || '').split(';');
+        }
+        else {
+            pathExtensions = [];
+        }
+
+        for (const i in paths) {
+            try {
+                const search = `${paths[i]}/${executable}`;
+                await lstat(search);
+                results.push(search);
+            }
+            catch (ex) {
+                for (const o in pathExtensions) {
+                    try {
+                        const extensionSearch = `${paths[i]}/${executable}${pathExtensions[o]}`;
+                        await lstat(extensionSearch);
+                        results.push(extensionSearch);
+                    }
+                    catch (ex) { continue; }
+                }
+            }
+        }
+
+        return results;
+    }
+
+    async FindInPath(executable: string): Promise<string> {
+        const results = await this.FindAllInPath(executable);
+
+        if (results.length) {
+            return results[0];
+        }
+
+        return null;
+    }
+
     get UserHome(): string {
         if (this.OS === EnumOperatingSystem.Windows) {
             return this.GetEnvironmentVariable('userprofile');
@@ -67,6 +156,10 @@ export class ProcessServiceEnvironment {
             // TODO: Implement this
             throw new Error('Not implemented, get user profile in linux');
         }
+    }
+
+    get WorkingDirectory(): string {
+        return process.cwd();
     }
 }
 
@@ -118,55 +211,19 @@ export default class ProcessService {
         return this._isAdmin;
     }
 
-    private GetPathArray(): string[] {
-        const os = this.GetOS();
-        if (os === EnumOperatingSystem.Windows) {
-            return this._processEnvironment.GetEnvironmentVariable('path').split(';');
-        }
-        return this._processEnvironment.GetEnvironmentVariable('path').split(':');
-    }
-
-    async FindInPath(executable: string, paths: string[] = null): Promise<string> {
-        if (paths === null) {
-            paths = this.GetPathArray();
-        }
-
-        const os = this.GetOS();
-        let pathExtensions = null;
-        if (os === EnumOperatingSystem.Windows) {
-            pathExtensions = (this._processEnvironment.GetEnvironmentVariable('pathext') || '').split(';');
-        }
-        else {
-            pathExtensions = [];
-        }
-
-        for (const i in paths) {
-            try {
-                const search = `${paths[i]}/${executable}`;
-                await lstat(search);
-                return search;
-            }
-            catch (ex) {
-                for (const o in pathExtensions) {
-                    try {
-                        const extensionSearch = `${paths[i]}/${executable}${pathExtensions[o]}`;
-                        await lstat(extensionSearch);
-                        return extensionSearch;
-                    }
-                    catch (ex) { continue; }
-                }
-            }
-        }
-
-        return null;
+    FindInPath(executable: string): Promise<string> {
+        return this._processEnvironment.FindInPath(executable);
     }
 
     async ExecutePowerShell(command: string): Promise<string> {
+        this._logger.LogTrace(`attempting to find the powershell executable in path`);
         const powerShellExecutable = await this.FindInPath('pwsh') || await this.FindInPath('powershell');
 
         if (powerShellExecutable === null) {
-            return null;
+            throw new Error('Unable to find the powershell binary');
         }
+
+        this._logger.LogTrace(`powershell binary found: ${powerShellExecutable}`);
 
         return await this.Execute(`"${powerShellExecutable}" -ExecutionPolicy Bypass -NoLogo -c ${command}`);
     }

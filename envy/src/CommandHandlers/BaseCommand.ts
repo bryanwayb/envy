@@ -204,7 +204,7 @@ export default abstract class BaseCommand {
             const packageService = await this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
 
             if (!await packageService.InstallService()) {
-                throw new Error(`Error while attempting to install the ${packageManagerWithOption} service`);
+                throw new Error(`Error while attempting to install the ${packageManagerWithOption.PackageManager} service`);
             }
         }
     }

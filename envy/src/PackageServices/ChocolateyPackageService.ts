@@ -1,13 +1,14 @@
 import Container, { Service } from 'typedi';
 import { IPackageService } from '../Interfaces/IPackageService';
 import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageService } from '../../consts';
-import { EnumOperatingSystem, ProcessServiceEnvironment } from '../Services/ProcessService';
+import ProcessService, { EnumOperatingSystem, ProcessServiceEnvironment } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
 import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
 import { ChocolateyConfigurationModel } from '../Configuration/Models/ConfigurationModel';
 import { PackageContextEnum, PackageServiceOptions } from './Models/PackageServiceOptions';
 import { BasePackageService } from './BasePackageService';
+import { dirname as dirnamePath, resolve as resolvePath } from 'path';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService extends BasePackageService implements IPackageService {
@@ -22,26 +23,36 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             return instance;
         }
 
-        if (!await this.ProcessService.IsAdmin()) {
+        const processService = await this.GetProcessService();
+        if (!await processService.IsAdmin()) {
             throw new Error('Using Chocolatey for system use requires admin access');
         }
 
         return this;
     }
 
-    protected GetProcessServiceEnvironment(): ProcessServiceEnvironment {
+    protected async GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment> {
         if (this._options.Context !== PackageContextEnum.System) {
             const processServiceEnvironment = new ProcessServiceEnvironment();
 
+            let rootPath: string = null;
+
             if (this._options.Context === PackageContextEnum.User) {
-                processServiceEnvironment.SetEnvironmentVariable('path', `${processServiceEnvironment.UserHome}/.nv/choco`);
+                rootPath = processServiceEnvironment.UserHome;
             }
             else if (this._options.Context === PackageContextEnum.Directory) {
-                processServiceEnvironment.SetEnvironmentVariable('path', `${this._options.Directory}/.nv/choco`);
+                rootPath = resolvePath(processServiceEnvironment.WorkingDirectory, this._options.Directory);
             }
             else {
                 throw new Error(`Context ${this._options.Context} is not supported for choco`);
             }
+
+            const config = await this.GetConfiguration();
+            const allExecutableLocations = (await processServiceEnvironment.FindAllInPath(config.rootCommand)).map(m => dirnamePath(m));
+            processServiceEnvironment.RemovePath(allExecutableLocations);
+            processServiceEnvironment.AddPath([`${rootPath}/.nv/choco/bin`]);
+
+            processServiceEnvironment.SetEnvironmentVariable('ChocolateyInstall', `${rootPath}/.nv/choco`);
 
             return processServiceEnvironment;
         }
@@ -115,7 +126,8 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             ...data
         });
 
-        return await this.ProcessService.Execute(commandLine, data => {
+        const processService = await this.GetProcessService();
+        return await processService.Execute(commandLine, data => {
             if (data.indexOf('[A]ll') !== -1) {
                 return 'A\n';
             }
@@ -233,15 +245,18 @@ export default class ChocolateyPackageService extends BasePackageService impleme
 
     async IsServiceAvailable(): Promise<boolean> {
         const config = await this.GetConfiguration();
+        const processService = await this.GetProcessService();
         return config.enabled
-            && this.ProcessService.GetOS() === EnumOperatingSystem.Windows
-            && await this.ProcessService.FindInPath(config.rootCommand) !== null;
+            && processService.GetOS() === EnumOperatingSystem.Windows
+            && await processService.FindInPath(config.rootCommand) !== null;
     }
 
     async IsServiceInstallable(): Promise<boolean> {
         const config = await this.GetConfiguration();
+        const processService = await this.GetProcessService();
+
         return config.enabled
-            && this.ProcessService.GetOS() === EnumOperatingSystem.Windows;
+            && processService.GetOS() === EnumOperatingSystem.Windows;
     }
 
     async InstallService(): Promise<boolean> {
@@ -249,11 +264,17 @@ export default class ChocolateyPackageService extends BasePackageService impleme
         this._logger.LogTrace(`installing choco`);
         if (!config.dryRun) {
             try {
-                await this.ProcessService.ExecutePowerShell(`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`);
+                const processService = await this.GetProcessService();
+                const result = await processService.ExecutePowerShell(`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`);
+
+                if (!result) {
+                    return false;
+                }
 
                 // TODO: Check the output to see if installation was successful
             }
             catch (ex) {
+                this._logger.LogError(ex);
                 return false;
             }
         }
