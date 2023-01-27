@@ -6,7 +6,7 @@ import { IPackageServiceFactory } from '../Interfaces/IPackageServiceFactory';
 import { DI_IPackageServiceFactory } from "../../consts";
 import ConsoleGUI from "../Services/ConsoleGUI";
 import HashSet from "../Classes/HashSet";
-import { PackageServiceOptions } from "../PackageServices/Models/PackageServiceOptions";
+import { PackageContextEnum, PackageServiceOptions } from "../PackageServices/Models/PackageServiceOptions";
 
 class PackageManagerWithOption {
     public readonly PackageManager: string;
@@ -104,6 +104,7 @@ export default abstract class BaseCommand {
 
         const missingManagers: PackageManagerWithOption[] = [];
         const installableManagers: PackageManagerWithOption[] = [];
+        const autoInstallableManagers: PackageManagerWithOption[] = [];
         const failedManagers: PackageManagerWithOption[] = [];
 
         for (const i in packageManagersWithOptions) {
@@ -116,7 +117,16 @@ export default abstract class BaseCommand {
                     this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} is not available`);
                     if (await packageManagerInstance.IsServiceInstallable()) {
                         this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} is installable`);
-                        installableManagers.push(packageManagerWithOption);
+
+                        // TODO: Auto confirm installation only when install context is a local directory (not a absoulte path or above current pwd)
+                        if (packageManagerWithOption.Options.Context === PackageContextEnum.Directory) {
+                            this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} will be auto installed`);
+                            autoInstallableManagers.push(packageManagerWithOption);
+                        }
+                        else {
+                            this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} will prompt for user approval`);
+                            installableManagers.push(packageManagerWithOption);
+                        }
                     }
                     else {
                         this._logger.LogTrace(`package manager ${packageManagerWithOption.PackageManager} is not installable`);
@@ -130,9 +140,7 @@ export default abstract class BaseCommand {
             }
         }
 
-        // TODO: Auto confirm installation when install context is a local directory (not a absoulte path or above current pwd)
-
-        if (missingManagers.length + installableManagers.length + failedManagers.length > 0) {
+        if (missingManagers.length + installableManagers.length + failedManagers.length + autoInstallableManagers.length > 0) {
             if (missingManagers.length > 0) {
                 this._consoleGUI.Output('The following package managers are missing but cannot be auto installed');
 
@@ -174,11 +182,25 @@ export default abstract class BaseCommand {
                 return false;
             }
 
-            const shouldInstall = await this._consoleGUI.ConfirmUserInput('Install missing package managers?');
+            // TODO: Should this even output?
+            if (autoInstallableManagers.length > 0) {
+                this._consoleGUI.Output('The following package managers will be auto installed');
+
+                for (const i in autoInstallableManagers) {
+                    const autoInstallableManager = autoInstallableManagers[i];
+                    this._consoleGUI.Output(`\t[${autoInstallableManager.Options.GetContextAsString()}] ${autoInstallableManager.PackageManager}`);
+                }
+
+                this._consoleGUI.Output('');
+            }
+
+            const shouldInstall = installableManagers.length === 0
+                || await this._consoleGUI.ConfirmUserInput('Install missing package managers?');
 
             if (shouldInstall) {
                 try {
                     await this.InstallPackageManagers(installableManagers);
+                    await this.InstallPackageManagers(autoInstallableManagers);
 
                     this._consoleGUI.Output('');
 
@@ -201,6 +223,10 @@ export default abstract class BaseCommand {
     private async InstallPackageManagers(packageManagers: PackageManagerWithOption[]): Promise<void> {
         for (const i in packageManagers) {
             const packageManagerWithOption = packageManagers[i];
+
+            // TODO: Improve the display of this
+            this._consoleGUI.Output(`Installing [${packageManagerWithOption.Options.GetContextAsString()}] ${packageManagerWithOption.PackageManager}`);
+
             const packageService = await this._packageServiceFactory.GetInstance(packageManagerWithOption.PackageManager, packageManagerWithOption.Options);
 
             if (!await packageService.InstallService()) {

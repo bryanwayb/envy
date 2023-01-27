@@ -67,10 +67,10 @@ sections:
         context: user
         operations:
           - install: "choco:lili.portable"
-  #- name: local_installs
-  #  targets:
-  #    - os: windows
-  #      context: ./testing/dir
-  #      operations:
-  #        - install: "choco:lili.portable"
+  - name: local_installs
+    targets:
+      - os: windows
+        context: ./bin
+        operations:
+          - install: "choco:lili.portable"
   - !import "import_section_example.yml"
