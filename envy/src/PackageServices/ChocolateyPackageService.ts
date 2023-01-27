@@ -9,6 +9,7 @@ import { ChocolateyConfigurationModel } from '../Configuration/Models/Configurat
 import { PackageContextEnum, PackageServiceOptions } from './Models/PackageServiceOptions';
 import { BasePackageService } from './BasePackageService';
 import { dirname as dirnamePath, resolve as resolvePath } from 'path';
+import { EnumTargetOS } from '../Configuration/Models/ApplyModels';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService extends BasePackageService implements IPackageService {
@@ -265,8 +266,18 @@ export default class ChocolateyPackageService extends BasePackageService impleme
         if (!config.dryRun) {
             try {
                 const processService = await this.GetProcessService();
-                const result = await processService.ExecutePowerShell(`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`);
 
+                let installCommand = `Set-ExecutionPolicy Bypass -Scope Process -Force;
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'));`;
+
+                if (this._options.Context === PackageContextEnum.Directory) {
+                    installCommand = `function Replacement-Install-ChocolateyPath {param([parameter(Mandatory=$true, Position=0)][string] $pathToInstall,[parameter(Mandatory=$false, Position=1)][System.EnvironmentVariableTarget] $pathType = [System.EnvironmentVariableTarget]::User,[parameter(ValueFromRemainingArguments = $true)][Object[]] $ignoredArguments)}
+Set-Alias -Name Install-ChocolateyPath -Value "Replacement-Install-ChocolateyPath";
+${installCommand}`;
+                }
+
+                const result = await processService.ExecutePowerShell(installCommand);
                 if (!result) {
                     return false;
                 }

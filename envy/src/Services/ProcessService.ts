@@ -225,6 +225,8 @@ export default class ProcessService {
 
         this._logger.LogTrace(`powershell binary found: ${powerShellExecutable}`);
 
+        command = command.split('\n').join(' ');
+
         return await this.Execute(`"${powerShellExecutable}" -ExecutionPolicy Bypass -NoLogo -c ${command}`);
     }
 
