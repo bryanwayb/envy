@@ -1,10 +1,13 @@
 import { PackageModel } from "../PackageServices/Models/PackageModel";
 import { PackageServiceOptions } from "../PackageServices/Models/PackageServiceOptions";
+import { ProcessServiceEnvironment } from "../Services/ProcessService";
 
 export interface IPackageService {
     ServiceIdentifier: string;
 
     WithOptions(options: PackageServiceOptions): Promise<IPackageService>;
+
+    GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment>;
 
     IsServiceAvailable(): Promise<boolean>;
     IsServiceInstallable(): Promise<boolean>;

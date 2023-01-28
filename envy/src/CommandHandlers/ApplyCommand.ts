@@ -21,7 +21,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
     private readonly _yamlSerializationService = Container.get(YamlSerializationService);
     private readonly _processService = Container.get(ProcessService);
 
-    GetApplyTargetNames(): string[] {
+    private GetApplyTargetNames(): string[] {
         const targetNames: string[] = [];
         let currentTargetName;
         let index = 0;
@@ -34,7 +34,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return targetNames;
     }
 
-    async FindDefaultApplyConfigPath(): Promise<string> {
+    private async FindDefaultApplyConfigPath(): Promise<string> {
         for (const i in DEFAULT_CONFIG_PATHS) {
             const configPath = DEFAULT_CONFIG_PATHS[i];
             const currentPath = joinPath(process.cwd(), configPath);
@@ -55,7 +55,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return null;
     }
 
-    async GetApplyConfigPaths(): Promise<string[]> {
+    private async GetApplyConfigPaths(): Promise<string[]> {
         const applyConfigs = this._commandLineService.GetOptionList('f');
         if (applyConfigs.length !== 0) {
             this._logger.LogTrace(`passed apply configs ${this._logger.Serialize(applyConfigs)}`);
@@ -73,7 +73,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return [configPath];
     }
 
-    async LoadApplyConfigurations(): Promise<ApplyRootModel[]> {
+    protected async LoadApplyConfigurations(): Promise<ApplyRootModel[]> {
         this._logger.LogTrace(`loading apply configs`);
 
         const applyConfigPaths = await this.GetApplyConfigPaths();
@@ -104,7 +104,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return applyConfigs;
     }
 
-    ConvertOperations(applyOperations: ApplyOperationModel[], packageManagerOptions: PackageServiceOptions): IOperation[] {
+    private ConvertOperations(applyOperations: ApplyOperationModel[], packageManagerOptions: PackageServiceOptions): IOperation[] {
         const operations: IOperation[] = [];
 
         for (const o in applyOperations) {
@@ -125,7 +125,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return operations;
     }
 
-    GetOperationsFromApplyTarget(target: ApplyTargetModel, packageManagerOptions: PackageServiceOptions): IOperation[] {
+    private GetOperationsFromApplyTarget(target: ApplyTargetModel, packageManagerOptions: PackageServiceOptions): IOperation[] {
         const operations: IOperation[] = [];
 
         if (target.CanTargetOS(this._processService.GetOS())
@@ -154,7 +154,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return operations;
     }
 
-    GetOperationsFromApplySection(section: ApplySectionModel, packageManagerOptions: PackageServiceOptions): IOperation[] {
+    private GetOperationsFromApplySection(section: ApplySectionModel, packageManagerOptions: PackageServiceOptions): IOperation[] {
         const operations: IOperation[] = [];
 
         if (section.operations) {
@@ -181,7 +181,7 @@ export default class ApplyCommand extends BaseCommand implements ICommandHandler
         return operations;
     }
 
-    GetOperationsFromApplyConfig(applyConfigurations: ApplyRootModel[]): IOperation[] {
+    protected GetOperationsFromApplyConfig(applyConfigurations: ApplyRootModel[]): IOperation[] {
         const operations: IOperation[] = [];
 
         for (const i in applyConfigurations) {

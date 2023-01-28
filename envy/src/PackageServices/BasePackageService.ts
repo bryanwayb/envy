@@ -17,7 +17,7 @@ export abstract class BasePackageService implements IPackageService {
         this._options = options;
     }
 
-    protected abstract GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment>;
+    public abstract GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment>;
 
     private _processService: ProcessService = null;
     async GetProcessService(): Promise<ProcessService> {

@@ -1,7 +1,7 @@
 import Container, { Service } from 'typedi';
 import { IPackageService } from '../Interfaces/IPackageService';
 import { DI_IConfiguration_Configuration, DI_IPackageService_ChocolateyPackageService } from '../../consts';
-import ProcessService, { EnumOperatingSystem, ProcessServiceEnvironment } from '../Services/ProcessService';
+import { EnumOperatingSystem, ProcessServiceEnvironment } from '../Services/ProcessService';
 import { PackageModel } from './Models/PackageModel';
 import ConfigurationService from '../Configuration/ConfigurationService';
 import FormatterService from '../Services/FormatterService';
@@ -9,7 +9,6 @@ import { ChocolateyConfigurationModel } from '../Configuration/Models/Configurat
 import { PackageContextEnum, PackageServiceOptions } from './Models/PackageServiceOptions';
 import { BasePackageService } from './BasePackageService';
 import { dirname as dirnamePath, resolve as resolvePath } from 'path';
-import { EnumTargetOS } from '../Configuration/Models/ApplyModels';
 
 @Service(DI_IPackageService_ChocolateyPackageService)
 export default class ChocolateyPackageService extends BasePackageService implements IPackageService {
@@ -32,14 +31,14 @@ export default class ChocolateyPackageService extends BasePackageService impleme
         return this;
     }
 
-    protected async GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment> {
+    public async GetProcessServiceEnvironment(): Promise<ProcessServiceEnvironment> {
         if (this._options.Context !== PackageContextEnum.System) {
             const processServiceEnvironment = new ProcessServiceEnvironment();
 
             let rootPath: string = null;
 
             if (this._options.Context === PackageContextEnum.User) {
-                rootPath = processServiceEnvironment.UserHome;
+                rootPath = `${processServiceEnvironment.UserHome}/.nv`;
             }
             else if (this._options.Context === PackageContextEnum.Directory) {
                 rootPath = resolvePath(processServiceEnvironment.WorkingDirectory, this._options.Directory);
@@ -51,9 +50,9 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             const config = await this.GetConfiguration();
             const allExecutableLocations = (await processServiceEnvironment.FindAllInPath(config.rootCommand)).map(m => dirnamePath(m));
             processServiceEnvironment.RemovePath(allExecutableLocations);
-            processServiceEnvironment.AddPath([`${rootPath}/.nv/choco/bin`]);
+            processServiceEnvironment.AddPath([`${rootPath}/choco/bin`]);
 
-            processServiceEnvironment.SetEnvironmentVariable('ChocolateyInstall', `${rootPath}/.nv/choco`);
+            processServiceEnvironment.SetEnvironmentVariable('ChocolateyInstall', `${rootPath}/choco`);
 
             return processServiceEnvironment;
         }
@@ -76,7 +75,6 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             packageEntry.Manager = this.ServiceIdentifier;
             packageEntry.Name = sections[0].trim();
             packageEntry.Version = sections[1].trim();
-            //packageEntry.Description = sections.splice(2).join(' ').trim();
 
             this._logger.LogTrace(`parsed ${packageEntry} from: ${input}`);
 
