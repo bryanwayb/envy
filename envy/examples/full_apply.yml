@@ -70,7 +70,7 @@ sections:
   - name: local_installs
     targets:
       - os: windows
-        context: ./bin
+        context: ./.nv
         operations:
           - install: "choco:lili.portable"
   - !import "import_section_example.yml"
