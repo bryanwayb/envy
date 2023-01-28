@@ -105,7 +105,7 @@ export default abstract class BaseCommand {
         const missingManagers: PackageManagerWithOption[] = [];
         const installableManagers: PackageManagerWithOption[] = [];
         const autoInstallableManagers: PackageManagerWithOption[] = [];
-        const failedManagers: PackageManagerWithOption[] = [];
+        const failedManagers: { Manager: PackageManagerWithOption, Reason: string }[] = [];
 
         for (const i in packageManagersWithOptions) {
             const packageManagerWithOption = packageManagersWithOptions[i];
@@ -136,7 +136,10 @@ export default abstract class BaseCommand {
             }
             catch (ex) {
                 this._logger.LogError(`package manager ${packageManagerWithOption.PackageManager} failed with the following error: ${ex}`);
-                failedManagers.push(packageManagerWithOption);
+                failedManagers.push({
+                    Manager: packageManagerWithOption,
+                    Reason: ex.message
+                });
             }
         }
 
@@ -165,11 +168,10 @@ export default abstract class BaseCommand {
 
             if (failedManagers.length > 0) {
                 this._consoleGUI.DisplayError('The following package managers failed to resolve');
-                this._consoleGUI.DisplayError('This is likely due to these being unsupported by Envy');
 
                 for (const i in failedManagers) {
                     const failedManager = failedManagers[i];
-                    this._consoleGUI.Output(`\t[${failedManager.Options.GetContextAsString()}] ${failedManager.PackageManager}`);
+                    this._consoleGUI.Output(`\t[${failedManager.Manager.Options.GetContextAsString()}] ${failedManager.Manager.PackageManager}: ${failedManager.Reason}`);
                 }
 
                 this._consoleGUI.Output('');

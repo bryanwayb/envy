@@ -6,7 +6,7 @@ export enum PackageContextEnum {
 
 export class PackageServiceOptions {
     public Context: PackageContextEnum = PackageContextEnum.System;
-    public Directory: string = '';
+    public Directory: string = null;
 
     public Equals(a: PackageServiceOptions, b: PackageServiceOptions): boolean {
         if (a.Context !== b.Context) {
