@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import yargs from 'yargs';
+import yargs = require('yargs');
 import { hideBin } from 'yargs/helpers';
 import { PackageContextEnum } from '../PackageServices/Models/PackageServiceOptions';
 
@@ -41,14 +41,17 @@ export default class CommandLineService {
         })
         .command('apply', 'applies an nv.yml configuration file', function (yargs) {
             return yargs
-                .usage("Usage: $0 apply")
-                .usage("Usage: $0 apply -f ./path/to/config.yml")
-                .usage("Usage: $0 apply -f ./firstConfig.yml -f secondConfig.yml")
+                .usage('Usage: $0 apply [options] <target section>')
                 .option('file', {
                     alias: 'f',
-                    describe: 'which apply config to use; defaults to nv.yml',
+                    describe: 'Which apply config to use; when not supplied defaults to ./nv.yml; Can be supplied multiple times. When multiple config files are given, processing order will be handled in the order they appear in the options list.',
                     group: 'Apply Options'
-                });
+                })
+                .example('$0 apply', 'Uses the default config path and all possible targets')
+                .example("$0 apply -f ./path/to/config.yml", 'Supplies a custom config file path')
+                .example("$0 apply -f ./firstConfig.yml -f /path/to/secondConfig.yml", 'Provides multiple apply configs')
+                .example('$0 apply sectionName.toTarget', 'Will only process sections that match the specific names')
+                .example('$0 apply firstSection sectionSection.subSectionTarget', 'Same as above, but will target multiple sections');
         })
         .command('install', 'installs a package or list of packages')
         .command('upgrade', 'upgrades or installs a package or list of packages')
@@ -57,6 +60,10 @@ export default class CommandLineService {
         .command('search', 'searches possible packages for install or upgrades')
         .command('help', 'displays this help information')
         .help();
+
+    constructor() {
+        this._arguments.wrap(this._arguments.terminalWidth());
+    }
 
     GetCommand(): string {
         const args = this._arguments.argv as any;
