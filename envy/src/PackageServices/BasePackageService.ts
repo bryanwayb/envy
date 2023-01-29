@@ -2,7 +2,7 @@ import Container from "typedi";
 import { IPackageService } from "../Interfaces/IPackageService";
 import LoggerService from "../Services/LoggerService";
 import { PackageModel } from "./Models/PackageModel";
-import { PackageServiceOptions } from "./Models/PackageServiceOptions";
+import { PackageContextEnum, PackageServiceOptions } from "./Models/PackageServiceOptions";
 import ProcessService, { ProcessServiceEnvironment } from "../Services/ProcessService";
 import YamlSerializationService from "../Services/YamlSerializationService";
 import ConsoleGUI from "../Services/ConsoleGUI";
@@ -30,6 +30,15 @@ export abstract class BasePackageService implements IPackageService {
             }
         }
         return this._processService;
+    }
+
+    protected async VerifyIfAdminNeeded(): Promise<void> {
+        if (this._options.Context === PackageContextEnum.System) {
+            const processService = await this.GetProcessService();
+            if (!await processService.IsAdmin()) {
+                throw new Error('Using Chocolatey for system use requires admin access');
+            }
+        }
     }
 
     ServiceIdentifier: string = 'not implemented';

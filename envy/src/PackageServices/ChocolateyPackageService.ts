@@ -23,11 +23,6 @@ export default class ChocolateyPackageService extends BasePackageService impleme
             return instance;
         }
 
-        const processService = await this.GetProcessService();
-        if (!await processService.IsAdmin()) {
-            throw new Error('Using Chocolatey for system use requires admin access');
-        }
-
         return this;
     }
 
@@ -213,6 +208,7 @@ export default class ChocolateyPackageService extends BasePackageService impleme
     }
 
     async InstallPackage(packageModel: PackageModel): Promise<void> {
+        await this.VerifyIfAdminNeeded();
         const config = await this.GetConfiguration();
 
         // TODO: Handle response codes
@@ -223,6 +219,7 @@ export default class ChocolateyPackageService extends BasePackageService impleme
     }
 
     async UninstallPackage(packageModel: PackageModel): Promise<void> {
+        await this.VerifyIfAdminNeeded();
         const config = await this.GetConfiguration();
 
         // TODO: Handle response codes
@@ -233,6 +230,8 @@ export default class ChocolateyPackageService extends BasePackageService impleme
     }
 
     async UpgradePackage(packageModel: PackageModel): Promise<void> {
+        await this.VerifyIfAdminNeeded();
+
         const config = await this.GetConfiguration();
 
         // TODO: Handle response codes
@@ -259,6 +258,8 @@ export default class ChocolateyPackageService extends BasePackageService impleme
     }
 
     async InstallService(): Promise<boolean> {
+        await this.VerifyIfAdminNeeded();
+
         const config = await this.GetConfiguration();
         this._logger.LogTrace(`installing choco`);
         if (!config.dryRun) {
