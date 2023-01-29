@@ -4,7 +4,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>envy</Name>
     <RootNamespace>pkgmgr</RootNamespace>
-    <ScriptArguments>-v apply -f .\examples\full_apply.yml\</ScriptArguments>
+    <ScriptArguments>-v shell -f .\examples\full_apply.yml\</ScriptArguments>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -76,6 +76,7 @@
     <TypeScriptCompile Include="src\CommandHandlers\ListCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\InstallCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\SearchCommand.ts" />
+    <TypeScriptCompile Include="src\CommandHandlers\ShellCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\UninstallCommand.ts" />
     <TypeScriptCompile Include="src\CommandHandlers\UpgradeCommand.ts" />
     <TypeScriptCompile Include="src\Configuration\ConfigurationService.ts" />

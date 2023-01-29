@@ -14,3 +14,10 @@ export const DI_IPackageServiceFactory = 'IPackageServiceFactory';
 export const DI_IPackageService_ChocolateyPackageService = 'IPackageService<ChocolateyPackageService>';
 
 export const Lock_Install = 'Lock_Install';
+
+// Required to be lowercase with no whitespaces for comparison logic
+export const SUPPORTED_SHELL_EXECUTABLES: string[] = [
+    'pwsh',
+    'powershell',
+    'cmd'
+];

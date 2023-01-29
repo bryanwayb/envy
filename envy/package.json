@@ -26,6 +26,7 @@
   "dependencies": {
     "colors": "1.4.0",
     "console-table-printer": "2.11.1",
+    "find-process": "^1.4.7",
     "handlebars": "4.7.7",
     "js-yaml": "4.1.0",
     "reflect-metadata": "0.1.13",

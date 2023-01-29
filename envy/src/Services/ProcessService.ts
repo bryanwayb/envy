@@ -1,8 +1,12 @@
-import { exec, ExecException } from 'child_process';
+import { exec, spawn, ExecException } from 'child_process';
 import { lstat } from 'fs/promises';
 import { platform } from 'os';
 import Container, { Service } from 'typedi';
 import LoggerService, { LogLevel } from './LoggerService';
+import find = require('find-process');
+import { SUPPORTED_SHELL_EXECUTABLES } from '../../consts';
+import { parse as parsePath } from 'path';
+
 
 export enum EnumOperatingSystem {
     Windows,
@@ -94,12 +98,18 @@ export class ProcessServiceEnvironment {
         this.SetPath(currentPath);
     }
 
-    AddPath(path: string[]): void {
+    AddPath(path: string[], highPriority: boolean = false): void {
         const currentPath = this.GetPath();
 
         for (const i in path) {
             const pathToAdd = path[i];
-            currentPath.push(pathToAdd);
+
+            if (highPriority) {
+                currentPath.unshift(pathToAdd);
+            }
+            else {
+                currentPath.push(pathToAdd);
+            }
         }
 
         this.SetPath(currentPath);
@@ -215,6 +225,83 @@ export default class ProcessService {
         return this._processEnvironment.FindInPath(executable);
     }
 
+    public async GetCurrentShellPath(): Promise<string> {
+        this._logger.LogTrace(`attempting to find the current shell environment`);
+
+        async function checkFileExist(path: string): Promise<boolean> {
+            try {
+                lstat(path);
+                return true;
+            }
+            catch (ex) {
+                return false;
+            }
+        }
+
+        const shellEnvironmentPath = this._processEnvironment.GetEnvironmentVariable('shell');
+        if (shellEnvironmentPath
+            && shellEnvironmentPath.trim()
+            && await checkFileExist(shellEnvironmentPath)) {
+            this._logger.LogTrace(`current shell found from environment: ${shellEnvironmentPath}`);
+            return shellEnvironmentPath;
+        }
+
+        // No SHELL environment variable was found, need to find by parrent ID
+        const parentPID = process.ppid;
+        this._logger.LogTrace(`no shell environment variable found, attempting to find one based on parent PID ${parentPID}`);
+
+        const processDetailsList = await find('pid', process.ppid);
+        if (processDetailsList && processDetailsList.length) {
+            const processDetails = processDetailsList[0] as any;
+
+            this._logger.LogTrace(`parent process details: ${this._logger.Serialize(processDetails)}`);
+
+            let executablePath: string = processDetails.bin;
+            let executableName: string = parsePath(processDetails.name).name;
+
+            if (executableName
+                && executablePath
+                && SUPPORTED_SHELL_EXECUTABLES.filter(f => f === executableName.trim().toLowerCase()).length > 0) {
+                this._logger.LogTrace(`current shell found from parent process: ${executablePath}`);
+                return executablePath;
+            }
+        }
+
+        // If we've not found a shell to use yet, return a relatively safe default based on current OS
+        this._logger.LogTrace(`no shell found from parent process, attempting to find one based on safe OS defaults`);
+        if (this.GetOS() === EnumOperatingSystem.Windows) {
+            // First find a CMD command from the users path
+            const cmdFromPath = await this.FindInPath('cmd');
+            if (cmdFromPath) {
+                this._logger.LogTrace(`current shell found from path: ${shellEnvironmentPath}`);
+                return cmdFromPath;
+            }
+            else {
+                // Check if ComSpec is set and if the executable exists
+                const comSpecEnvironmentPath = this._processEnvironment.GetEnvironmentVariable('comspec');
+                if (comSpecEnvironmentPath
+                    && comSpecEnvironmentPath.trim()
+                    && await checkFileExist(comSpecEnvironmentPath)) {
+                    this._logger.LogTrace(`current shell found from comspec: ${shellEnvironmentPath}`);
+                    return comSpecEnvironmentPath;
+                }
+
+                // Lastly check if SystemRoot's System32 has the cmd
+                const systemRootEnvironmentPath = this._processEnvironment.GetEnvironmentVariable('systemroot');
+                const system32CmdPath = `${systemRootEnvironmentPath}/System32/cmd.exe`;
+                if (await checkFileExist(system32CmdPath)) {
+                    this._logger.LogTrace(`current shell found system32 om system root path: ${shellEnvironmentPath}`);
+                    return system32CmdPath;
+                }
+            }
+        }
+        else {
+            // TODO: Resolve linux binary
+        }
+
+        throw new Error('No shell found');
+    }
+
     async ExecutePowerShell(command: string): Promise<string> {
         this._logger.LogTrace(`attempting to find the powershell executable in path`);
         const powerShellExecutable = await this.FindInPath('pwsh') || await this.FindInPath('powershell');
@@ -228,6 +315,23 @@ export default class ProcessService {
         command = command.split('\n').join(' ');
 
         return await this.Execute(`"${powerShellExecutable}" -ExecutionPolicy Bypass -NoLogo -c ${command}`);
+    }
+
+    ExecuteInteractive(command: string, ...args: string[]): Promise<number> {
+        return new Promise((resolve, reject) => {
+            this._logger.LogTrace(`interactive spawn command: ${command}\narguments: ${this._logger.Serialize(args)}\nenvironment: ${this._logger.Serialize(this._processEnvironment.Environment)}`);
+            const shell = spawn(command, args, {
+                stdio: 'inherit',
+                env: this._processEnvironment.Environment
+            });
+            shell.on('error', (err) => {
+                reject(err);
+            });
+            shell.on('close', (resultCode) => {
+                this._logger.LogTrace(`shell terminated with result code: ${resultCode}`);
+                resolve(resultCode);
+            });
+        });
     }
 
     Execute(command: string, interactiveHandler?: (data: string) => string): Promise<string> {
