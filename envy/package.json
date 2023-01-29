@@ -13,14 +13,13 @@
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "watch": "tsc --watch",
-    "dist": "tsc --outDir ./dist/build && node ./dist/build/prepareBuild.js && pkg ./dist/build/app.js -c ./package.json -C GZip && node postBuild"
+    "dist": "tsc --outDir ./dist/build && node ./dist/build/prepareBuild.js && pkg ./dist/build/app.js -c ./package.json"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^14.14.7",
     "@types/yargs": "^17.0.15",
     "pkg": "^5.8.0",
-    "rcedit": "^3.0.1",
     "typescript": "^4.5.2"
   },
   "dependencies": {
@@ -36,7 +35,8 @@
   },
   "pkg": {
     "assets": [
-      "**/config.yml"
+      "**/config.yml",
+      "**/package.json"
     ],
     "targets": [
       "node18-win-x64"
