@@ -39,6 +39,9 @@ export default class ShellCommand extends ApplyCommand implements ICommandHandle
             case 'pwsh':
                 commandArguments = ['-NoExit', '-NoLogo', '-Command', 'function prompt{"$([char]27)[95m(envy)$([char]27)[0m PS $(pwd)> "}'];
                 break;
+            case 'cmd':
+                commandArguments = ['/K' , 'prompt $Cenvy$F $P$G'];
+                break;
         }
 
         await processService.ExecuteInteractive(shellPath, ...commandArguments);
