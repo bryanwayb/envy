@@ -62,9 +62,6 @@
     <Folder Include="src\PackageServices\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="postBuild.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="prepareBuild.ts" />
     <TypeScriptCompile Include="consts.ts" />
     <TypeScriptCompile Include="src\Classes\HashSet.ts" />

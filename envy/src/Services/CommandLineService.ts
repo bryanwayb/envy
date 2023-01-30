@@ -53,6 +53,7 @@ export default class CommandLineService {
                 .example('$0 apply sectionName.toTarget', 'Will only process sections that match the specific names')
                 .example('$0 apply firstSection sectionSection.subSectionTarget', 'Same as above, but will target multiple sections');
         })
+        .command('shell', 'prepares an environment from an apply config and launches a shell')
         .command('install', 'installs a package or list of packages')
         .command('upgrade', 'upgrades or installs a package or list of packages')
         .command('uninstall', 'uninstalls a package or list of packages')
